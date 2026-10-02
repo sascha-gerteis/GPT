@@ -1,0 +1,86 @@
+name: Apply V6.5 Mobile Arcade Patch
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/apply-v65.yml"
+      - ".v65/**"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct V6.5 patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .v65/part_*.b64 > /tmp/v65.b64
+          base64 --decode /tmp/v65.b64 > /tmp/v65.zip
+          unzip -t /tmp/v65.zip
+          rm -rf /tmp/v65
+          mkdir -p /tmp/v65
+          unzip -q /tmp/v65.zip -d /tmp/v65
+          test -f /tmp/v65/VERSION.txt
+          test -f /tmp/v65/platform-v65.css
+          test -f /tmp/v65/shell-v65.js
+          test -f /tmp/v65/games/mobile-controls.js
+
+      - name: Overlay V6.5 onto deployed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a /tmp/v65/. src/
+
+          # Preserve the real account/shared matchmaking layer.
+          test -f src/online.js
+          test -f src/online.css
+          test -f src/online-config.js
+          test -f supabase/migrations/001_accounts_matchmaking.sql
+
+      - name: Wire V6.5 shell assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("src/index.html")
+          s=p.read_text()
+          if 'platform-v65.css' not in s:
+              s=s.replace('<link rel="stylesheet" href="platform.css">','<link rel="stylesheet" href="platform.css">\n  <link rel="stylesheet" href="platform-v65.css">')
+          if 'shell-v65.js' not in s:
+              s=s.replace('<script src="online.js"></script>','<script src="online.js"></script><script src="shell-v65.js"></script>')
+          p.write_text(s)
+          PY
+
+      - name: Verify combined V6.5 build
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 src/qa_release.py
+          python3 src/qa_mobile.py
+          grep -q "V6.5-mobile-arcade-beta" src/launch-config.js
+          grep -q "platform-v65.css" src/index.html
+          grep -q "shell-v65.js" src/index.html
+          grep -q "online.js" src/index.html
+          grep -q "joinOnlineQueue" src/online.js
+          grep -q "join_matchmaking" supabase/migrations/001_accounts_matchmaking.sql
+
+      - name: Commit V6.5
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src
+          if ! git diff --cached --quiet; then
+            git commit -m "Deploy Skill Arcade V6.5 mobile arcade fixes"
+            git push
+          fi
