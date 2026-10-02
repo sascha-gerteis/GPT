@@ -1,0 +1,68 @@
+name: Deploy Skill Arcade to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Reconstruct release
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .release/part_*.b64 > release.b64
+          base64 --decode release.b64 > release.zip
+          rm -rf unpack site
+          mkdir -p unpack site
+          unzip -q release.zip -d unpack
+          cp -a unpack/skill-arcade-v6.2-final/. site/
+          touch site/.nojekyll
+
+      - name: Publish unpacked source into repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf src
+          mkdir -p src
+          cp -a site/. src/
+          rm -f src/.nojekyll
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish Skill Arcade V6.2 source"
+            git push
+          fi
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
