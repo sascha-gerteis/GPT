@@ -1,6 +1,6 @@
 window.SKILL_ARCADE_LAUNCH_CONFIG = Object.freeze({
-  build: 'V6.2',
-  mode: 'demo',
+  build: 'V6.3-online-beta',
+  mode: 'online-beta',
   realMoneyEnabled: false,
   practiceEnabled: true,
   approvedJurisdictions: [],
