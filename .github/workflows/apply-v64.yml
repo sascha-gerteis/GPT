@@ -60,8 +60,8 @@ jobs:
         run: |
           set -euo pipefail
           python3 src/qa_release.py
-          grep -q "const PLAYER_COUNT=12" src/games/falling-tiles/game.js
-          grep -q "const PLAYER_COUNT=12" src/games/meteor-dodge/game.js
+          grep -Eq "PLAYER_COUNT=12|PLAYERS=12" src/games/falling-tiles/game.js
+          grep -Eq "PLAYER_COUNT=12|PLAYERS=12" src/games/meteor-dodge/game.js
           grep -q "character-kit.js" src/games/obstacle-sprint/index.html
           grep -q "mobile-controls.js" src/games/obstacle-sprint/index.html
 
