@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111329">
+  <title>Skill Arcade · Product Complete Demo</title>
+  <link rel="stylesheet" href="platform.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="Skill Arcade home"><span class="brand-mark"><i></i><i></i><i></i></span><span>SKILL ARCADE</span><em>DEMO</em></a>
+  <nav class="nav" aria-label="Main navigation">
+    <button class="nav-btn active" data-tab="games">Play</button>
+    <button class="nav-btn" data-tab="history">History</button>
+    <button class="nav-btn" data-tab="wallet">Wallet</button>
+    <button class="nav-btn" data-tab="profile">Account</button>
+  </nav>
+  <button id="walletButton" class="balance-button"><span>Demo balance</span><strong id="headerBalance">$25.00</strong></button>
+</header>
+
+<main class="page">
+  <section class="tab-panel active" data-panel="games">
+    <div class="page-head"><div><div class="eyebrow">COMPETITIVE MINI-GAMES</div><h1>Choose a game</h1><p>Practice free, or preview a competitive lobby with simulated credits.</p></div><div class="demo-note"><b>PRODUCT DEMO</b><span>No real money</span></div></div>
+    <div id="sessionBanner" class="session-banner hidden"><strong>Session reminder</strong><span>You have been playing for a while.</span><button id="dismissSession" type="button">Dismiss</button></div>
+    <div class="catalog-bar"><span id="gameCount" class="quiet-chip">11 games</span><div class="filters"><button class="filter-btn active" data-filter="ALL">All</button><button class="filter-btn" data-filter="SURVIVAL">Survival</button><button class="filter-btn" data-filter="RACE">Race</button><button class="filter-btn" data-filter="ARENA">Arena</button><button class="filter-btn" data-filter="REACTION">Reaction</button><button class="filter-btn" data-filter="SCORE">Score</button><button class="filter-btn" data-filter="TAG">Tag</button></div></div>
+    <div id="gameGrid" class="game-grid"></div>
+  </section>
+
+  <section class="tab-panel" data-panel="history">
+    <div class="section-head"><div><div class="eyebrow">RESULTS & RECEIPTS</div><h1>Match history</h1><p>Every competitive demo result has a traceable receipt.</p></div><span id="historyPlayed" class="quiet-chip">0 played</span></div>
+    <div id="historyList" class="history-list"></div>
+  </section>
+
+  <section class="tab-panel" data-panel="wallet">
+    <div class="wallet-hero"><div><div class="eyebrow">DEMO WALLET</div><h1 id="walletBalance">$25.00</h1><p>Live-style wallet and ledger using non-withdrawable test credits.</p></div><span class="wallet-demo-pill">DEMO ONLY</span></div>
+    <div class="balance-breakdown"><article><span>Available</span><strong id="walletAvailable">$25.00</strong></article><article><span>In matches</span><strong>$0.00</strong></article><article><span>Pending</span><strong>$0.00</strong></article></div>
+    <div class="wallet-actions"><button disabled>Deposit</button><button disabled>Withdraw</button></div>
+    <p class="muted-line">Deposit and withdrawal remain disabled until legal structure, payment custody, KYC/AML and jurisdiction eligibility are approved.</p>
+    <div class="wallet-grid"><article><span>Matches</span><strong id="walletMatches">0</strong></article><article><span>Wins</span><strong id="walletWins">0</strong></article><article><span>Prizes earned</span><strong id="walletPrizes">$0.00</strong></article></div>
+    <div class="subsection-head"><div><div class="eyebrow">TRANSACTION LEDGER</div><h2>Wallet activity</h2></div><button class="text-button" id="openFundsFlow" type="button">View proposed funds flow</button></div>
+    <div id="ledgerList" class="ledger-list"></div>
+    <button id="resetDemo" class="text-button danger-text" type="button">Reset demo account</button>
+  </section>
+
+  <section class="tab-panel" data-panel="profile">
+    <div class="profile-row"><div class="avatar" id="avatarLabel">P1</div><div><div class="eyebrow">ACCOUNT</div><h1 id="profileName">Demo Player</h1><p id="profileRegion">One profile across every mini-game.</p></div></div>
+    <div class="account-stats"><article><span>Matches</span><strong id="profileMatches">0</strong></article><article><span>Wins</span><strong id="profileWins">0</strong></article><article><span>Environment</span><strong>Demo</strong></article></div>
+
+    <div class="subsection-head"><div><div class="eyebrow">LIVE ACCESS PREVIEW</div><h2>Eligibility</h2></div><button id="runEligibility" class="secondary-btn" type="button">Run preview</button></div>
+    <div class="verification-grid">
+      <article><div><b>Age</b><span>18+ required for proposed competitive cash mode</span></div><em id="eligAge">NOT CHECKED</em></article>
+      <article><div><b>Identity</b><span>KYC / identity verification before cash access</span></div><em id="eligIdentity">NOT CHECKED</em></article>
+      <article><div><b>Location</b><span>Jurisdiction and geolocation check before entry</span></div><em id="eligLocation">NOT CHECKED</em></article>
+      <article><div><b>Fair play</b><span>Device, anti-cheat and server result controls</span></div><em id="eligFair">NOT CHECKED</em></article>
+    </div>
+
+    <div class="subsection-head spaced"><div><div class="eyebrow">SKILL PROFILE</div><h2>Game ranks</h2></div><span class="quiet-chip">Demo rating</span></div>
+    <div id="rankGrid" class="rank-grid"></div>
+
+    <div class="subsection-head spaced"><div><div class="eyebrow">RESPONSIBLE PLAY</div><h2>Demo controls</h2></div></div>
+    <div class="controls-grid">
+      <label><span>Daily competitive limit</span><select id="dailyLimit"><option value="10">$10</option><option value="25">$25</option><option value="50">$50</option><option value="100">$100</option><option value="0">No demo limit</option></select><small id="dailySpentText">$0.00 used today</small></label>
+      <label><span>Session reminder</span><select id="sessionReminder"><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">60 minutes</option><option value="0">Off</option></select><small>Reminder appears when you return to the arcade.</small></label>
+      <div class="control-card"><span>Competitive pause</span><b id="pauseStatus">Not active</b><button id="pause24h" class="secondary-btn" type="button">Pause for 24 hours</button><small>Practice remains available.</small></div>
+    </div>
+
+    <div class="subsection-head spaced"><div><div class="eyebrow">SUPPORT</div><h2>Disputes & policies</h2></div></div>
+    <div class="support-grid">
+      <button id="openSupport" class="support-card" type="button"><b>Report a match</b><span>Open a demo dispute using a match receipt.</span></button>
+      <button class="support-card" data-policy="competition" type="button"><b>Competition rules</b><span>How entries, placements and settlements work.</span></button>
+      <button class="support-card" data-policy="refund" type="button"><b>Disconnect & refund policy</b><span>Draft rules for failed or interrupted matches.</span></button>
+      <button class="support-card" data-policy="fairplay" type="button"><b>Fair play policy</b><span>Server authority, anti-cheat and collusion controls.</span></button>
+      <button class="support-card" data-policy="responsible" type="button"><b>Responsible play</b><span>Limits, pauses and self-exclusion principles.</span></button>
+      <button class="support-card" data-policy="privacy" type="button"><b>Privacy draft</b><span>Proposed treatment of identity, gameplay and payment data.</span></button>
+    </div>
+    <div id="ticketList" class="ticket-list"></div>
+    <div class="live-flow"><span>Proposed live access</span><b>Verify age → Verify identity → Check jurisdiction → Fund safeguarded wallet → Join eligible lobby → Server-verified result → Settlement → Withdrawal</b></div>
+  </section>
+</main>
+
+<footer class="footer"><span>Skill Arcade · Product Complete Demo</span><nav><button data-policy="terms">Draft terms</button><button data-policy="competition">Competition rules</button><button data-policy="refund">Refunds</button><button data-policy="fairplay">Fair play</button><button data-policy="responsible">Responsible play</button><button data-policy="privacy">Privacy</button></nav><b>NO REAL MONEY</b></footer>
+
+<div id="lobbyModal" class="modal-backdrop hidden"><section class="lobby-modal"><button id="closeLobby" class="close-btn" type="button" aria-label="Close">×</button><div id="lobbyThumb" class="lobby-thumb"></div><div class="lobby-heading"><div><div id="lobbyGameNo" class="eyebrow">GAME 01</div><h2 id="lobbyTitle">Floor Breaker</h2><p id="lobbyMeta">Break the floor. Stay out of the lava.</p><small id="lobbyFacts">5 players · ~4 min</small></div><div class="modal-balance"><span>DEMO BALANCE</span><strong id="modalBalance">$25.00</strong></div></div><div class="lobby-mini-actions"><button id="howToPlay" class="secondary-btn" type="button">How to play</button><button id="practiceGame" class="practice-btn" type="button">Practice · Free</button></div><div class="choose-label">COMPETITIVE DEMO LOBBY</div><div class="lobby-options" id="lobbyOptions"></div><div class="payout-title">TOP 3 PRIZES</div><div class="payouts"><div class="first"><span>1ST</span><strong id="p1">$2.60</strong></div><div class="second"><span>2ND</span><strong id="p2">$1.15</strong></div><div class="third"><span>3RD</span><strong id="p3">$1.00</strong></div></div><div class="economics"><div><span>Total entries</span><strong id="grossValue">$5.00</strong></div><div><span>Platform fee · 5%</span><strong id="feeValue">$0.25</strong></div><div><span>Prize pool</span><strong id="poolValue">$4.75</strong></div></div><div class="live-checks"><span>LIVE MODE WOULD REQUIRE</span><b>18+</b><b>ID</b><b>LOCATION</b><b>FAIR PLAY</b></div><button id="launchGame" class="launch-btn" type="button">JOIN DEMO LOBBY · $1.00</button><div id="lobbyMessage" class="lobby-message">Simulated credits only.</div></section></div>
+
+<div id="rulesModal" class="modal-backdrop hidden"><section class="info-modal"><button class="close-btn" data-close="rulesModal" type="button">×</button><div class="eyebrow">HOW TO PLAY</div><h2 id="rulesTitle">Game rules</h2><div id="rulesBody"></div><button id="rulesPractice" class="practice-btn full" type="button">Practice free</button></section></div>
+
+<div id="queueModal" class="modal-backdrop hidden"><section class="queue-modal"><div id="queueIcon" class="queue-icon">⌁</div><div class="eyebrow" id="queueMode">COMPETITIVE DEMO</div><h2 id="queueTitle">Finding players</h2><p id="queueSubtitle">0 / 8 joined</p><div class="queue-track"><i id="queueProgress"></i></div><div id="queueChecks" class="queue-checks"><span>Demo wallet</span><span>Match rules</span><span>Fair-play preview</span></div><button id="cancelQueue" class="secondary-btn" type="button">Cancel</button></section></div>
+
+<div id="receiptModal" class="modal-backdrop hidden"><section class="info-modal receipt-modal"><button class="close-btn" data-close="receiptModal" type="button">×</button><div class="eyebrow">MATCH RECEIPT · DEMO</div><h2 id="receiptTitle">Floor Breaker</h2><div id="receiptBody" class="receipt-body"></div><div class="receipt-verify"><b>Result status</b><span>Server verified · simulated for prototype</span></div><button id="receiptReport" class="secondary-btn full" type="button">Report this match</button></section></div>
+
+<div id="policyModal" class="modal-backdrop hidden"><section class="info-modal policy-modal"><button class="close-btn" data-close="policyModal" type="button">×</button><div class="eyebrow">DRAFT FOR LEGAL REVIEW</div><h2 id="policyTitle">Policy</h2><div id="policyBody" class="policy-body"></div></section></div>
+
+<div id="disputeModal" class="modal-backdrop hidden"><section class="info-modal"><button class="close-btn" data-close="disputeModal" type="button">×</button><div class="eyebrow">DEMO SUPPORT</div><h2>Report a match</h2><label class="form-field"><span>Match</span><select id="disputeMatch"></select></label><label class="form-field"><span>Reason</span><select id="disputeReason"><option>Connection / disconnect issue</option><option>Result appears incorrect</option><option>Suspected cheating</option><option>Match failed to start correctly</option><option>Other</option></select></label><label class="form-field"><span>Details</span><textarea id="disputeDetails" rows="4" placeholder="Describe what happened"></textarea></label><button id="submitDispute" class="launch-btn" type="button">Create demo support ticket</button><small class="form-note">Prototype only. No ticket is sent outside this browser.</small></section></div>
+
+<div id="eligibilityModal" class="modal-backdrop hidden"><section class="info-modal"><button class="close-btn" data-close="eligibilityModal" type="button">×</button><div class="eyebrow">LIVE ACCESS PREVIEW</div><h2>Eligibility flow</h2><p class="modal-copy">This simulates the checks a live cash mode would require. It does not verify your real identity or location.</p><div class="elig-flow"><button data-elig="age" type="button"><b>1</b><span>Confirm 18+ requirement</span><em id="flowAge">RUN</em></button><button data-elig="identity" type="button"><b>2</b><span>Simulate identity verification</span><em id="flowIdentity">RUN</em></button><button data-elig="location" type="button"><b>3</b><span>Simulate jurisdiction check</span><em id="flowLocation">RUN</em></button><button data-elig="fair" type="button"><b>4</b><span>Simulate fair-play device check</span><em id="flowFair">RUN</em></button></div><small class="form-note">Actual live access would depend on counsel, payment providers and jurisdiction-specific requirements.</small></section></div>
+
+<div id="fundsModal" class="modal-backdrop hidden"><section class="info-modal"><button class="close-btn" data-close="fundsModal" type="button">×</button><div class="eyebrow">PROPOSED LIVE ARCHITECTURE</div><h2>Funds flow</h2><div class="funds-flow"><span>Player</span><i>→</i><span>Licensed / approved payment partner</span><i>→</i><span>Safeguarded player balance</span><i>→</i><span>Entry locked for match</span><i>→</i><span>Server verifies result</span><i>→</i><span>95% prizes + 5% platform fee</span><i>→</i><span>Withdrawable balance</span></div><p class="modal-copy">Proposed structure only. The final custody, licensing, KYC/AML and payout model must be approved by counsel and participating payment providers before any real funds are enabled.</p></section></div>
+
+<div id="onboardingModal" class="modal-backdrop hidden"><section class="info-modal onboarding-modal"><div class="eyebrow">WELCOME</div><h2>Create your demo profile</h2><p class="modal-copy">This profile stays only in this browser. Real-money access is disabled.</p><label class="form-field"><span>Display name</span><input id="onboardName" maxlength="20" value="Demo Player"></label><label class="form-field"><span>Country / region (optional)</span><input id="onboardRegion" maxlength="40" placeholder="For product-flow preview only"></label><div class="onboard-note"><b>Live competitive mode would additionally require:</b><span>18+ eligibility · identity verification · jurisdiction / geolocation approval · fair-play checks</span></div><button id="finishOnboarding" class="launch-btn" type="button">Continue to arcade</button></section></div>
+
+<script src="launch-config.js"></script><script src="platform.js"></script>
+</body>
+</html>

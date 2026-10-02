@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#071018" />
+  <title>Skill Arcade Demo - Floor Breaker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="app">
+    <section id="gameShell" class="game-shell" aria-label="Floor Breaker 3D game">
+      <canvas id="game"></canvas>
+
+      <div class="demo-ribbon" aria-label="Demo mode">DEMO MODE · NO REAL MONEY</div>
+
+      <div class="top-hud" aria-label="Match HUD">
+        <div id="walletCard" class="hud-chip wallet-chip">
+          <span>DEMO WALLET</span>
+          <strong id="walletValue">$10.00</strong>
+          <b id="walletPop" class="wallet-pop"></b>
+        </div>
+        <div class="hud-chip compact"><span>TIME</span><strong id="timeValue">4:00</strong></div>
+        <div class="hud-chip compact"><span>ALIVE</span><strong id="aliveValue">5</strong></div>
+        <div class="hud-chip compact optional"><span>BLOCKS</span><strong id="blocksValue">0</strong></div>
+        <div class="hud-chip compact optional"><span>KOs</span><strong id="koValue">0</strong></div>
+      </div>
+
+      <div class="top-actions">
+        <button id="soundBtn" class="glass-btn" type="button">SOUND ON</button>
+        <button id="leaveBtn" class="glass-btn danger hidden" type="button">LEAVE</button>
+      </div>
+
+      <aside id="scorePanel" class="score-panel" aria-label="Standings">
+        <div class="score-head"><span>STANDINGS</span><b id="matchStateBadge">LOBBY</b></div>
+        <div id="standings" class="standings"></div>
+      </aside>
+
+      <div id="eventFeed" class="event-feed" aria-live="polite"></div>
+      <div id="crosshair" class="crosshair hidden" aria-hidden="true"><i></i><b></b><em></em><u></u></div>
+      <div id="toast" class="toast" aria-live="polite"></div>
+
+      <div id="countdown" class="countdown hidden" aria-live="assertive">
+        <div id="countdownLabel" class="countdown-label">MATCH STARTS IN</div>
+        <div id="countdownNumber" class="countdown-number">3</div>
+        <div class="countdown-sub">Get ready</div>
+      </div>
+
+      <div id="spectatorBar" class="spectator-bar hidden">
+        <button id="spectatePrev" type="button" aria-label="Previous player">◀</button>
+        <div><small>SPECTATING</small><strong id="spectateName">PLAYER</strong></div>
+        <button id="spectateNext" type="button" aria-label="Next player">▶</button>
+        <button id="newMatchSpectate" class="accent" type="button">NEW MATCH</button>
+        <button id="exitSpectate" class="danger-text" type="button">EXIT</button>
+      </div>
+
+      <div id="touchControls" class="touch-controls" aria-hidden="true">
+        <div id="joystick" class="joystick"><div id="joystickKnob" class="joystick-knob"></div></div>
+        <button id="jumpTouch" class="touch-button jump" type="button">JUMP</button>
+        <button id="fireTouch" class="touch-button fire" type="button">FIRE</button>
+      </div>
+
+      <div id="overlay" class="overlay show">
+        <section id="menuPanel" class="modal lobby-modal">
+          <header class="lobby-header">
+            <div>
+              <div class="brand-line"><a class="arcade-back" href="../../index.html">← ARCADE</a><span class="brand-mark">SA</span><strong>SKILL ARCADE</strong><b>DEMO</b></div>
+              <p class="brand-sub">Competitive games. Transparent entry. Skill decides the result.</p>
+            </div>
+            <div class="account-badge">
+              <span>PLAYER</span>
+              <strong>Demo Player</strong>
+            </div>
+          </header>
+
+          <div class="lobby-grid">
+            <section class="game-card" aria-label="Selected game">
+              <div class="game-card-top">
+                <div>
+                  <div class="eyebrow">GAME 01 · SELECTED</div>
+                  <h1>FLOOR<br><span>BREAKER</span></h1>
+                </div>
+                <div class="game-status"><i></i> READY</div>
+              </div>
+              <p>Break the blocks under opponents and stay above the lava. Five identical loadouts. Last player standing wins.</p>
+              <div class="rules-strip">
+                <div><b>5</b><span>players</span></div>
+                <div><b>4:00</b><span>max round</span></div>
+                <div><b>2,304</b><span>blocks</span></div>
+              </div>
+              <div class="control-copy"><b>WASD</b> move · <b>Mouse</b> look · <b>Click</b> fire · <b>Space</b> jump · aim down to rocket jump</div>
+            </section>
+
+            <section class="wallet-panel" aria-label="Demo wallet">
+              <div class="panel-label">DEMO WALLET</div>
+              <div class="wallet-main-row">
+                <div>
+                  <span>AVAILABLE BALANCE</span>
+                  <strong id="lobbyWalletBalance">$10.00</strong>
+                </div>
+                <span class="demo-pill">DEMO FUNDS</span>
+              </div>
+              <div class="wallet-actions">
+                <button class="wallet-action" type="button" disabled title="Enabled only after legal/payment setup">DEPOSIT</button>
+                <button class="wallet-action" type="button" disabled title="Enabled only after legal/payment setup">WITHDRAW</button>
+              </div>
+              <button id="resetDemoBtn" class="reset-demo-btn" type="button">RESET DEMO BALANCE TO $25</button>
+              <div class="account-stats">
+                <div><span>TOTAL PRIZES</span><strong id="lobbyWon">$0.00</strong></div>
+                <div><span>MATCHES</span><strong id="lobbyMatches">0</strong></div>
+                <div><span>WINS</span><strong id="lobbyWins">0</strong></div>
+              </div>
+            </section>
+
+            <section class="entry-panel" aria-label="Match economics">
+              <div class="entry-heading">
+                <div><span>COMPETITIVE MATCH</span><strong>Floor Breaker · 5 Players</strong></div>
+                <div class="entry-price"><span>ENTRY</span><strong id="entryPriceValue">$1.00</strong></div>
+              </div>
+
+              <div class="pool-flow">
+                <div><span>Gross entries</span><strong id="grossPoolValue">$5.00</strong></div>
+                <div class="minus"><span>Platform fee</span><strong id="feeValue">−$0.25 · 5%</strong></div>
+                <div class="pool-total"><span>Prize pool</span><strong id="prizePoolValue">$4.75</strong></div>
+              </div>
+
+              <div class="payout-row" aria-label="Prize distribution">
+                <div class="first"><span>1ST</span><strong id="payout1Value">$2.60</strong></div>
+                <div><span>2ND</span><strong id="payout2Value">$1.15</strong></div>
+                <div><span>3RD</span><strong id="payout3Value">$1.00</strong></div>
+                <div class="muted"><span>4–5TH</span><strong>$0.00</strong></div>
+              </div>
+
+              <button id="startBtn" class="primary-btn" type="button">ENTER MATCH · $1.00</button>
+              <div id="entryMessage" class="entry-message">$1.00 demo entry is deducted when the match starts.</div>
+            </section>
+
+            <section class="history-panel" aria-label="Recent demo matches">
+              <div class="history-head">
+                <div><span>RECENT MATCHES</span><strong>Floor Breaker</strong></div>
+                <span id="historyCount">0 PLAYED</span>
+              </div>
+              <div id="recentMatches" class="recent-matches">
+                <div class="history-empty">Completed matches will appear here.</div>
+              </div>
+            </section>
+          </div>
+
+          <footer class="legal-demo-note">
+            <b>DEMO ENVIRONMENT</b>
+            <span>No deposits, withdrawals, or real-money prizes are enabled. This prototype uses simulated funds until the legal, licensing, age/KYC, geolocation, and payment structure is approved.</span>
+          </footer>
+        </section>
+
+        <section id="resultPanel" class="modal result-modal hidden">
+          <div class="result-topline">
+            <div>
+              <div class="eyebrow">MATCH SETTLED · DEMO</div>
+              <div id="winnerName" class="winner-name">WINNER: —</div>
+            </div>
+            <div class="settlement-status"><i></i> SETTLED</div>
+          </div>
+          <div id="resultPlace" class="result-place">#1</div>
+          <h2 id="resultTitle">VICTORY</h2>
+          <p id="resultReason"></p>
+
+          <div class="settlement-card">
+            <div class="settlement-line"><span>Entry fee</span><strong id="resultEntry">−$1.00</strong></div>
+            <div class="settlement-line"><span>KO demo bonuses</span><strong id="resultAction">+$0.00</strong></div>
+            <div class="settlement-line"><span>Placement prize</span><strong id="resultPrize">+$0.00</strong></div>
+            <div class="settlement-line fee"><span>Platform fee</span><strong id="resultFee">5% total pool fee</strong></div>
+            <div class="settlement-line net"><span>Match net</span><strong id="resultNet">$0.00</strong></div>
+          </div>
+
+          <div class="result-summary-grid">
+            <div><span>BLOCKS</span><strong id="resultBlocks">0</strong></div>
+            <div><span>DEMO WALLET</span><strong id="resultWallet">$0.00</strong></div>
+          </div>
+
+          <div class="result-actions">
+            <button id="playAgainBtn" class="primary-btn" type="button">PLAY AGAIN · $1.00</button>
+            <button id="exitBtn" class="secondary-btn" type="button">BACK TO LOBBY</button>
+          </div>
+          <small>Demo settlement only. No real funds are transferred.</small>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script>if(!window.THREE){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js"><\/script>')}</script>
+  <script src="../match-bridge.js"></script><script src="game.js"></script>
+</body>
+</html>
