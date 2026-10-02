@@ -162,7 +162,7 @@ begin
   end if;
 
   p_region := coalesce(nullif(trim(p_region),''),'global');
-  v_target := 8;
+  v_target := 2;
 
   -- Serialize queue assignment for this game/region.
   perform pg_advisory_xact_lock(hashtext('skill-arcade:' || p_game_slug || ':' || p_region));
