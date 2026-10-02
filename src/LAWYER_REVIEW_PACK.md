@@ -35,29 +35,24 @@ This package is a **demo only**. It does not accept or pay real money.
 
 Default fee shown in the prototype: **5% of aggregate entries**.
 
-Example — 8-player, $5 lobby:
+Standard competition lobby: **12 players**.
 
-- Gross entries: $40.00
-- Platform fee: $2.00
-- Prize pool: $38.00
-- 1st: $22.50
-- 2nd: $10.50
-- 3rd: $5.00
+Example — 12-player, $5 lobby:
 
-Example — 5-player Floor Breaker, $5 lobby:
+- Gross entries: $60.00
+- Platform fee: $3.00
+- Prize pool: $57.00
+- 1st: $30.00
+- 2nd: $17.00
+- 3rd: $10.00
 
-- Gross entries: $25.00
-- Platform fee: $1.25
-- Prize pool: $23.75
-- 1st: $13.00
-- 2nd: $5.75
-- 3rd: $5.00
+The same 12-player payout ratios are used across the current game catalog: **6.00 / 3.40 / 2.00 × entry**, which totals 95% of aggregate entries. Gameplay statistics such as KOs or blocks destroyed do not create undisclosed cash-like bonuses outside that published pool.
 
 The exact fee and payout model are proposed product terms, not a legal conclusion.
 
 ## 4. Game outcome model
 
-The platform currently contains 11 game types. See `GAME_RULES.md`.
+The platform currently contains 11 game types using a 12-player standard competition lobby. See `GAME_RULES.md`.
 
 Design principles used in the prototype:
 
@@ -66,6 +61,7 @@ Design principles used in the prototype:
 - no loot boxes or purchased random power-ups affecting outcome,
 - placements follow published game rules,
 - Practice uses the same mechanics but does not affect wallet/history,
+- touch and desktop input use the same underlying movement/ability limits,
 - competitive entries and prize values are disclosed before entry.
 
 Counsel should assess each game separately if required by the applicable jurisdiction.

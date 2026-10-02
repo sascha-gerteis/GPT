@@ -1,5 +1,5 @@
 # Wall Dodge
 
-Fit through the gap. Three hits and you are out.
+Fit through the gap. Four hits and you are out.
 
-Controls: A / D = move.
+Controls: WASD / mobile movement pad = move.

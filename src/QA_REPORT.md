@@ -1,31 +1,36 @@
-# QA Report — V6.2 Final Bug-Fixed Lawyer / External Pilot Demo
+# QA Report — V6.4 12-Player Gameplay Reboot / Online Beta
 
-## Release checks completed
+## Static release checks completed
 
-- JavaScript syntax checked for the platform, launch config, shared bridge, YOU marker, and all 11 game scripts.
-- All game HTML-to-JavaScript DOM references validated.
-- All local script and stylesheet paths validated.
+- JavaScript syntax checked for platform code, all 11 game scripts, shared character kit and shared mobile controls.
+- All 11 game registries use a 12-player standard competition lobby.
+- 12-player payout math reconciles to a 95% prize pool after the displayed 5% fee: ratios 6.00 / 3.40 / 2.00.
+- Floor Breaker KO events no longer add a hidden cash-like bonus outside the disclosed top-three payout pool.
+- Shared third-person character kit is loaded by the non-first-person titles and preserves existing animation aliases.
 - All non-first-person games retain a visible YOU marker.
-- Falling Tiles regression fixed: all 225 tiles start present and visible on every map variant; no variant starts with pre-cut holes.
-- Falling Tiles tile reset restores visibility, height, scale, opacity and state between matches.
-- Bomb Tag has no hidden round-time settlement; elimination continues until one survivor remains.
-- Knockout has no hidden round-time settlement; arena shrink stages are based on elapsed progression and play continues until one survivor remains.
-- Safe Zone, Wall Dodge and Meteor Dodge retain last-survivor settlement rules.
-- Meteor Dodge retains radial arena clamping so players cannot leave the visible circle.
-- Rotating-map helper still excludes the immediately previous map when multiple layouts exist.
-- Real-money launch configuration remains hard-disabled and Thailand remains blocked in the review build.
-- Windows local launcher hardened to start the server before opening the browser.
-- Repeatable static QA is included as `qa_release.py` / `RUN_QA.bat`.
+- Shared touch controls synthesize the same movement/action inputs consumed by desktop logic; Floor Breaker keeps its dedicated touch implementation.
+- Obstacle Sprint enlarged-map transform scales platforms, rails, gates, pushers, sweepers, checkpoints and paths together.
+- Falling Tiles starts every match with the complete 19×19 floor; no map begins with pre-cut holes.
+- Safe Zone platform visuals and safe hitboxes were re-aligned after the arena-size increase.
+- Wall Dodge wall geometry, gap positions, movement clamp and trigger/remove bounds were updated together for the wider arena.
+- Meteor Dodge retains radial arena clamping and uses lower early strike density before escalating.
+- Bomb Tag, Knockout, Falling Tiles, Safe Zone, Wall Dodge and Meteor Dodge retain last-survivor settlement behavior rather than hidden timeout settlement.
+- Rotating-map helper still excludes the immediately previous map where multiple layouts exist.
+- Real-money launch configuration remains disabled in the online-beta build.
+
+## Environment limitation
+
+A headless Chromium screenshot/render pass was attempted in the build environment but timed out with browser/DBus errors. Therefore this report does **not** claim full automated visual-browser QA. Static code/path/syntax/economy checks passed; real-device desktop/mobile playtesting is still required before an external gameplay pilot.
 
 ## Still not production-validated by this browser prototype
 
-- real multiplayer networking,
-- authoritative server simulation/results,
-- production anti-cheat,
+- authoritative real multiplayer networking,
+- production anti-cheat and replay verification,
+- reconnect/latency/load behavior at 12 simultaneous real players,
 - real KYC / age verification,
 - real geolocation,
 - payment custody / deposits / withdrawals,
 - regulatory classification or jurisdiction approval,
 - penetration testing, load testing, observability and incident response.
 
-These items must be completed before enabling real-money competition.
+These items must be completed before enabling any real-money competition.

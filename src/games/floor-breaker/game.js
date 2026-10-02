@@ -70,10 +70,10 @@
   const requestedEntry = Number(query.get('entry'));
   const LOBBY_ENTRY = [1,5,20].includes(requestedEntry) ? requestedEntry : 1;
 
-  // Block Crash-inspired setup: one dense floor, five players, lava, last alive wins.
-  const PLAYERS = 5;
-  const COLS = 48;
-  const ROWS = 48;
+  // Block Crash-inspired setup: one dense floor, twelve players, lava, last alive wins.
+  const PLAYERS = 12;
+  const COLS = 60;
+  const ROWS = 60;
   const TILE = 0.82;
   const TILE_H = 0.30;
   const BOARD_W = COLS * TILE;
@@ -82,10 +82,10 @@
   const FLOOR_TOP = FLOOR_Y + TILE_H * 0.5;
   const LAVA_Y = -5.4;
   const KILL_Y = -4.85;
-  const ROUND_SECONDS = 240;
+  const ROUND_SECONDS = 330;
   const ENTRY_FEE = LOBBY_ENTRY;
-  const KO_REWARD = 0.10 * ENTRY_FEE;
-  const PRIZES = [2.60, 1.15, 1.00].map(v => v * ENTRY_FEE);
+  const KO_REWARD = 0; // KOs are a skill stat; all competition money stays inside the displayed top-three prize pool.
+  const PRIZES = [6.00, 3.40, 2.00].map(v => v * ENTRY_FEE);
   const DEMO_START_BALANCE = 25.00;
   const STORAGE_KEY = 'skillArcadeDemoAccountV1';
   const GRAVITY = 21.5;
@@ -104,8 +104,8 @@
   const ROCKET_JUMP_VY = 8.8;
   const ROCKET_JUMP_COOLDOWN = 0.90;
   const ROCKET_JUMP_GROUND_WINDOW = 0.26;
-  const NAMES = ['You', 'Nova', 'Rook', 'Mika', 'Volt'];
-  const COLORS = [0xffd64d, 0x5bc8ff, 0xff6f7c, 0x8be29a, 0xb591ff];
+  const NAMES = ['You','Nova','Mika','Rook','Volt','Pip','Zed','Kira','Atlas','Echo','Juno','Blaze'];
+  const COLORS = [0xffd84e,0xff5f83,0x55d6b0,0x53c8ff,0x9f7cff,0xff8a4f,0x77dd67,0x42d1d6,0xffb347,0xe66cff,0x6f8cff,0xff6b57];
   const BASE_TILE = new THREE.Color(0x3a83bd);
   const CRACKED_TILE = new THREE.Color(0xc07a3c);
   const DAMAGED_TILE = new THREE.Color(0xe9a24f);
@@ -447,7 +447,7 @@
     clearGroup(playerRoot);clearGroup(effectRoot);projectiles.length=0;effects.length=0;players.length=0;feed.length=0;
     eliminationCounter=0;spectateId=null;endLocked=false;lookYaw=0;lookPitch=-.13;cameraShake=0;viewWeapon.userData.recoil=0;
     buildFloor();
-    const spawns=[[-12,-12],[12,-12],[-12,12],[12,12],[0,0]];
+    const spawnR=Math.min(BOARD_W,BOARD_D)*.31,spawns=Array.from({length:PLAYERS},(_,i)=>{const a=i/PLAYERS*Math.PI*2-.35;return[Math.cos(a)*spawnR,Math.sin(a)*spawnR]});
     for(let i=0;i<PLAYERS;i++){
       const p={id:i,name:NAMES[i],color:COLORS[i],x:spawns[i][0],z:spawns[i][1],y:FLOOR_TOP,vx:0,vz:0,vy:0,alive:true,grounded:true,lastGroundedAt:0,rocketJumpCd:0,rocketJumpedThisAir:false,shootCd:rand(.5,1.1),blocks:0,kos:0,earnings:0,survival:0,elimOrder:null,lastDamageBy:null,lastDamageAt:-999,lastForceBy:null,lastForceAt:-999,facingX:0,facingZ:-1,aiThink:rand(.15,.4),aiShoot:rand(1.0,1.8),aiMoveX:0,aiMoveZ:0,aiTargetId:null,lavaWarned:false};
       players.push(p);makePlayerMesh(p);
@@ -595,9 +595,8 @@
     p.alive=false;p.grounded=false;p.elimOrder=++eliminationCounter;p.group.visible=false;
     const culprit=p.lastDamageBy;
     if(culprit!=null&&culprit!==p.id&&players[culprit]){
-      players[culprit].kos++;players[culprit].earnings+=KO_REWARD;
-      addFeed(`<b>${players[culprit].name}</b> dropped <b>${p.name}</b> into lava. <b>+${money(KO_REWARD)}</b>`,'ko');
-      if(culprit===0)creditWallet(KO_REWARD,'KNOCKOUT');
+      players[culprit].kos++;
+      addFeed(`<b>${players[culprit].name}</b> dropped <b>${p.name}</b> into lava. <b>KO</b>`,'ko');
     } else addFeed(`<b>${p.name}</b> fell into the lava.`,'ko');
     sfx('ko');
     const alive=players.filter(x=>x.alive);

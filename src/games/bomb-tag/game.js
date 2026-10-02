@@ -5,7 +5,7 @@ if(!window.THREE){$('startBtn').disabled=true;$('startBtn').textContent='3D ENGI
 const THREE=window.THREE;
 const qs=new URLSearchParams(location.search), rawEntry=Number(qs.get('entry'));
 const ENTRY=[1,5,20].includes(rawEntry)?rawEntry:1;
-const STORAGE='skillArcadeDemoAccountV1',PLAYERS=8,FEE=.05,PAYOUTS=[4.5,2.1,1].map(v=>v*ENTRY),POOL=PLAYERS*ENTRY*(1-FEE),FIXED=1/120;
+const STORAGE='skillArcadeDemoAccountV1',PLAYERS=12,FEE=.05,PAYOUTS=[6,3.4,2].map(v=>v*ENTRY),POOL=PLAYERS*ENTRY*(1-FEE),FIXED=1/120;
 const keys=new Set(),players=[],eliminated=[];
 let state='menu',account=load(),wallet=account.wallet,count=3,elapsed=0,last=performance.now(),acc=0,dashBuffer=0,toastT=0,bombHolder=null,bombFuse=0,passCooldown=0,nextBombDelay=0,explosions=0;
 function load(){const f={wallet:25,totalPrizes:0,wins:0,totalMatches:0,matches:[]};try{const d=JSON.parse(localStorage.getItem(STORAGE)||'null');return d?{...f,...d,matches:Array.isArray(d.matches)?d.matches:[]}:f}catch{return f}}
@@ -19,33 +19,25 @@ function updateEconomy(){
 }
 const renderer=new THREE.WebGLRenderer({canvas:$('game'),antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));renderer.shadowMap.enabled=true;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x1a1024);scene.fog=new THREE.Fog(0x1a1024,28,75);
-const camera=new THREE.PerspectiveCamera(55,1,.05,100);camera.position.set(0,14.5,13.8);camera.lookAt(0,0,0);scene.add(camera);
+const camera=new THREE.PerspectiveCamera(55,1,.05,100);camera.position.set(0,18.5,17.4);camera.lookAt(0,0,0);scene.add(camera);
 scene.add(new THREE.HemisphereLight(0xd9d2ff,0x2a1537,1.75));const sun=new THREE.DirectionalLight(0xffffff,1.8);sun.position.set(-12,22,-8);sun.castShadow=true;scene.add(sun);
 const world=new THREE.Group(),root=new THREE.Group(),fx=new THREE.Group();scene.add(world,root,fx);
 const mat=(c,r=.62)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
-const floor=new THREE.Mesh(new THREE.CylinderGeometry(8.7,8.7,.55,64),mat(0x564483,.65));floor.position.y=-.28;floor.receiveShadow=true;world.add(floor);
-const inner=new THREE.Mesh(new THREE.CylinderGeometry(7.65,7.65,.09,64),mat(0x6f5da0,.72));inner.position.y=.035;inner.receiveShadow=true;world.add(inner);
-const border=new THREE.Mesh(new THREE.TorusGeometry(8.3,.13,8,64),new THREE.MeshStandardMaterial({color:0xa98de1,emissive:0x39245d,emissiveIntensity:.8,roughness:.35}));border.rotation.x=Math.PI/2;border.position.y=.16;world.add(border);
-const lava=new THREE.Mesh(new THREE.CylinderGeometry(13,13,.45,64),new THREE.MeshStandardMaterial({color:0xff4a18,emissive:0xff2400,emissiveIntensity:1.7,roughness:.45}));lava.position.y=-4.4;world.add(lava);
-const colors=[0xffd84e,0xff6e9d,0x60d9b7,0x61c5ff,0xb18cff,0xff8a55,0x82e26f,0x4fc6d9],names=['You','Nova','Mika','Rook','Volt','Pip','Zed','Kira'];
-function makePlayer(i){
-  const g=new THREE.Group(),bodyMat=mat(colors[i],.55),dark=mat(0x272437,.7),white=mat(0xffffff,.65);
-  const body=new THREE.Mesh(new THREE.SphereGeometry(.5,16,12),bodyMat);body.scale.set(.92,1.1,.82);body.position.y=.78;g.add(body);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.35,16,12),bodyMat);head.position.y=1.35;g.add(head);
-  const visor=new THREE.Mesh(new THREE.BoxGeometry(.44,.16,.07),white);visor.position.set(0,1.39,.31);g.add(visor);
-  const legGeo=new THREE.CylinderGeometry(.1,.12,.5,8),la=new THREE.Mesh(legGeo,dark),lb=la.clone();la.position.set(-.18,.25,0);lb.position.set(.18,.25,0);g.add(la,lb);
-  if(i===0)window.addYouMarker3D?.(THREE,g,{radius:.7,labelY:2.02});
-  g.userData={la,lb};return g;
-}
+const floor=new THREE.Mesh(new THREE.CylinderGeometry(11.7,11.7,.55,64),mat(0x564483,.65));floor.position.y=-.28;floor.receiveShadow=true;world.add(floor);
+const inner=new THREE.Mesh(new THREE.CylinderGeometry(10.55,10.55,.09,64),mat(0x6f5da0,.72));inner.position.y=.035;inner.receiveShadow=true;world.add(inner);
+const border=new THREE.Mesh(new THREE.TorusGeometry(11.05,.13,8,64),new THREE.MeshStandardMaterial({color:0xa98de1,emissive:0x39245d,emissiveIntensity:.8,roughness:.35}));border.rotation.x=Math.PI/2;border.position.y=.16;world.add(border);
+const lava=new THREE.Mesh(new THREE.CylinderGeometry(17,17,.45,64),new THREE.MeshStandardMaterial({color:0xff4a18,emissive:0xff2400,emissiveIntensity:1.7,roughness:.45}));lava.position.y=-4.4;world.add(lava);
+const colors=[0xffd84e,0xff5f83,0x55d6b0,0x53c8ff,0x9f7cff,0xff8a4f,0x77dd67,0x42d1d6,0xffb347,0xe66cff,0x6f8cff,0xff6b57],names=['You','Nova','Mika','Rook','Volt','Pip','Zed','Kira','Atlas','Echo','Juno','Blaze'];
+function makePlayer(i){return window.SkillArcadeCharacters?.make(THREE,i,{colors,scale:1.02,markerRadius:.74,labelY:2.14})||new THREE.Group()}
 const bombGroup=new THREE.Group();const bombCore=new THREE.Mesh(new THREE.SphereGeometry(.27,18,14),new THREE.MeshStandardMaterial({color:0x1a1a21,roughness:.45}));const fuse=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.34,8),new THREE.MeshStandardMaterial({color:0x8b755c,roughness:.8}));fuse.position.set(.12,.34,0);fuse.rotation.z=-.5;const spark=new THREE.Mesh(new THREE.SphereGeometry(.1,10,8),new THREE.MeshBasicMaterial({color:0xff5a45}));spark.position.set(.21,.48,0);bombGroup.add(bombCore,fuse,spark);scene.add(bombGroup);bombGroup.visible=false;
 function reset(){
   root.clear();fx.clear();players.length=0;eliminated.length=0;explosions=0;bombHolder=null;bombFuse=0;passCooldown=0;nextBombDelay=0;
-  const pts=[[-4.8,3.8],[0,5],[4.8,3.8],[-5.4,0],[5.4,0],[-4.8,-3.8],[0,-5],[4.8,-3.8]];
-  for(let i=0;i<PLAYERS;i++){const g=makePlayer(i);root.add(g);players.push({id:i,name:names[i],g,pos:new THREE.Vector3(pts[i][0],.05,pts[i][1]),vel:new THREE.Vector3(),alive:true,bot:i>0,facing:new THREE.Vector2(0,-1),dashCd:0,dashTime:0,passes:0,bombTime:0,skill:i?[.88,.92,.85,.94,.9,.87,.91][i-1]:1})}
+  const pts=Array.from({length:PLAYERS},(_,i)=>{const a=i/PLAYERS*Math.PI*2-.25;return[Math.cos(a)*7.8,Math.sin(a)*7.8]});
+  for(let i=0;i<PLAYERS;i++){const g=makePlayer(i);root.add(g);players.push({id:i,name:names[i],g,pos:new THREE.Vector3(pts[i][0],.05,pts[i][1]),vel:new THREE.Vector3(),alive:true,bot:i>0,facing:new THREE.Vector2(0,-1),dashCd:0,dashTime:0,passes:0,bombTime:0,skill:i?[.88,.92,.85,.94,.9,.87,.91,.89,.93,.86,.9][(i-1)%11]:1})}
 }
 reset();
 function alive(){return players.filter(p=>p.alive)}
-function setBomb(p,announce=true){bombHolder=p;bombFuse=Math.max(5.2,9.0-explosions*.45);passCooldown=.65;if(announce){if(p.id===0)toast('YOU HAVE THE BOMB!');else toast(`BOMB ON ${p.name.toUpperCase()}`)}}
+function setBomb(p,announce=true){bombHolder=p;bombFuse=Math.max(6.0,10.5-explosions*.32);passCooldown=.65;if(announce){if(p.id===0)toast('YOU HAVE THE BOMB!');else toast(`BOMB ON ${p.name.toUpperCase()}`)}}
 function chooseNextBomb(){
   const live=alive();if(live.length<=1)return;
   const start=(account.totalMatches+explosions)%PLAYERS;
@@ -62,7 +54,7 @@ function inputFor(p){
     const dx=p.pos.x-holder.pos.x,dz=p.pos.z-holder.pos.z,d=Math.hypot(dx,dz)||1;
     if(d<5.2){x=dx/d;z=dz/d}else{x=Math.sin(elapsed*.7+p.id*1.7);z=Math.cos(elapsed*.6+p.id*1.3)}
   }else{x=Math.sin(elapsed*.7+p.id);z=Math.cos(elapsed*.5+p.id)}
-  const edge=Math.hypot(p.pos.x,p.pos.z);if(edge>6.8){x+=-p.pos.x*.55;z+=-p.pos.z*.55}
+  const edge=Math.hypot(p.pos.x,p.pos.z);if(edge>9.1){x+=-p.pos.x*.55;z+=-p.pos.z*.55}
   const l=Math.hypot(x,z)||1;x/=l;z/=l;
   let dash=false;if(p.dashCd<=0){if(holder&&holder.id===p.id){const near=alive().filter(q=>q.id!==p.id).some(q=>Math.hypot(q.pos.x-p.pos.x,q.pos.z-p.pos.z)<2.5);dash=near}else if(holder){dash=Math.hypot(holder.pos.x-p.pos.x,holder.pos.z-p.pos.z)<2.4&&bombFuse<4.5}}
   return{x,z,dash};
@@ -73,7 +65,7 @@ function updatePlayer(p,dt){
   if(len>.05){const nx=inp.x/len,nz=inp.z/len;p.facing.set(nx,nz);const speed=4.8*p.skill,blend=1-Math.exp(-12*dt);p.vel.x+=(nx*speed-p.vel.x)*blend;p.vel.z+=(nz*speed-p.vel.z)*blend}else{const drag=Math.exp(-9*dt);p.vel.x*=drag;p.vel.z*=drag}
   if(inp.dash&&p.dashCd<=0){p.dashCd=1.2;p.dashTime=.18;p.vel.x=p.facing.x*9.5;p.vel.z=p.facing.y*9.5;if(!p.bot)dashBuffer=0}
   p.dashTime=Math.max(0,p.dashTime-dt);p.pos.x+=p.vel.x*dt;p.pos.z+=p.vel.z*dt;
-  const dist=Math.hypot(p.pos.x,p.pos.z),maxR=7.72;if(dist>maxR){const nx=p.pos.x/dist,nz=p.pos.z/dist;p.pos.x=nx*maxR;p.pos.z=nz*maxR;const outward=p.vel.x*nx+p.vel.z*nz;if(outward>0){p.vel.x-=nx*outward*1.65;p.vel.z-=nz*outward*1.65}}
+  const dist=Math.hypot(p.pos.x,p.pos.z),maxR=10.45;if(dist>maxR){const nx=p.pos.x/dist,nz=p.pos.z/dist;p.pos.x=nx*maxR;p.pos.z=nz*maxR;const outward=p.vel.x*nx+p.vel.z*nz;if(outward>0){p.vel.x-=nx*outward*1.65;p.vel.z-=nz*outward*1.65}}
   p.g.position.copy(p.pos);const face=Math.atan2(p.facing.x,p.facing.y),diff=Math.atan2(Math.sin(face-p.g.rotation.y),Math.cos(face-p.g.rotation.y));p.g.rotation.y+=diff*Math.min(1,dt*12);
   const s=Math.hypot(p.vel.x,p.vel.z),ph=elapsed*9+p.id;p.g.userData.la.rotation.x=Math.sin(ph)*(s>.4?.55:0);p.g.userData.lb.rotation.x=-p.g.userData.la.rotation.x;
 }

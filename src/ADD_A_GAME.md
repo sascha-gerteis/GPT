@@ -1,4 +1,4 @@
-# Add-a-Game Contract — Skill Arcade V6.2
+# Add-a-Game Contract — Skill Arcade V6.4
 
 Future games should plug into the existing platform rather than inventing their own wallet or account model.
 
@@ -47,3 +47,8 @@ A live game must not trust the browser for position, collision, score, placement
 ## Map-pool requirement
 
 If a new title uses multiple layouts, expose a stable map ID/name, choose one map for the entire lobby, avoid immediate repeats when practical, and store the selected map in the match record. Do not create cosmetic-only "maps" that change appearance while leaving misleading collision geometry.
+
+
+## V6.4 competition standard
+
+New competition games should target the current 12-player lobby standard unless a documented game-specific reason requires a different format. Payout ratios must total 95% of aggregate entry value, mobile controls must be supported, and third-person games should use the shared character/marker/polish layers where compatible.

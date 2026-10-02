@@ -2,7 +2,7 @@
 
 Game 04 for Skill Arcade.
 
-- 8 players
+- 12 players
 - Fixed screen-relative WASD controls
 - Space / DASH for a short burst
 - One visible bomb with a countdown fuse

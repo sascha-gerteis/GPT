@@ -5,8 +5,8 @@ if(!window.THREE){$('startBtn').disabled=true;$('startBtn').textContent='3D ENGI
 const THREE=window.THREE;
 const qs=new URLSearchParams(location.search), rawEntry=Number(qs.get('entry'));
 const ENTRY=[1,5,20].includes(rawEntry)?rawEntry:1;
-const STORAGE='skillArcadeDemoAccountV1', PLAYERS=8, FEE=.05;
-const PAYOUTS=[4.5,2.1,1].map(v=>v*ENTRY), POOL=PLAYERS*ENTRY*(1-FEE), FIXED=1/120;
+const STORAGE='skillArcadeDemoAccountV1', PLAYERS=12, FEE=.05;
+const PAYOUTS=[6,3.4,2].map(v=>v*ENTRY), POOL=PLAYERS*ENTRY*(1-FEE), FIXED=1/120;
 const keys=new Set(), players=[], eliminated=[];
 let state='menu',account=load(),wallet=account.wallet,count=3,elapsed=0,last=performance.now(),acc=0,dashBuffer=0,toastT=0;
 function load(){const f={wallet:25,totalPrizes:0,wins:0,totalMatches:0,matches:[]};try{const d=JSON.parse(localStorage.getItem(STORAGE)||'null');return d?{...f,...d,matches:Array.isArray(d.matches)?d.matches:[]}:f}catch{return f}}
@@ -23,40 +23,32 @@ function updateEconomy(){
 const renderer=new THREE.WebGLRenderer({canvas:$('game'),antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));renderer.shadowMap.enabled=true;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x201749);scene.fog=new THREE.Fog(0x201749,30,90);
-const camera=new THREE.PerspectiveCamera(56,1,.05,120);camera.position.set(0,14.5,13.5);camera.lookAt(0,0,0);scene.add(camera);
+const camera=new THREE.PerspectiveCamera(56,1,.05,120);camera.position.set(0,18.5,17.5);camera.lookAt(0,0,0);scene.add(camera);
 scene.add(new THREE.HemisphereLight(0xbddcff,0x2d1943,1.7));
 const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(-15,25,-14);sun.castShadow=true;scene.add(sun);
 const world=new THREE.Group(),root=new THREE.Group(),fx=new THREE.Group();scene.add(world,root,fx);
 const mat=(c,r=.65)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
 const floorM=mat(0x6351a6),floor2=mat(0x493d82),coreM=mat(0x2f6f7d),lavaM=new THREE.MeshStandardMaterial({color:0xff4d16,emissive:0xff2100,emissiveIntensity:1.5,roughness:.4});
 function box(w,h,d,x,y,z,m){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=o.receiveShadow=true;world.add(o);return o}
-box(32,.6,32,0,-5,0,lavaM);box(7.6,.55,7.6,0,-.25,0,coreM);
+box(44,.6,44,0,-5,0,lavaM);box(9.2,.55,9.2,0,-.25,0,coreM);
 const mid=[],outer=[];
-for(const [arr,half,inner,m] of [[mid,5.5,3.8,floor2],[outer,7.5,5.5,floorM]]){
+for(const [arr,half,inner,m] of [[mid,7.2,4.6,floor2],[outer,10,7.2,floorM]]){
   const w=half-inner;
   arr.push(box(w,.55,half*2,-(inner+w/2),-.25,0,m),box(w,.55,half*2,(inner+w/2),-.25,0,m),box(inner*2,.55,w,0,-.25,-(inner+w/2),m),box(inner*2,.55,w,0,-.25,(inner+w/2),m));
 }
-const colors=[0xffd84e,0xff6e9d,0x60d9b7,0x61c5ff,0xb18cff,0xff8a55,0x82e26f,0x4fc6d9],names=['You','Nova','Mika','Rook','Volt','Pip','Zed','Kira'];
-function model(i){
-  const g=new THREE.Group(),b=mat(colors[i],.55),d=mat(0x243142,.7),w=mat(0xffffff,.7);
-  const body=new THREE.Mesh(new THREE.SphereGeometry(.5,16,12),b);body.scale.set(.9,1.08,.78);body.position.y=.78;g.add(body);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.35,16,12),b);head.position.y=1.35;g.add(head);
-  const visor=new THREE.Mesh(new THREE.BoxGeometry(.42,.16,.07),w);visor.position.set(0,1.39,.31);g.add(visor);
-  const legGeo=new THREE.CylinderGeometry(.1,.12,.5,8),la=new THREE.Mesh(legGeo,d),lb=la.clone();la.position.set(-.18,.25,0);lb.position.set(.18,.25,0);g.add(la,lb);
-  if(i===0)window.addYouMarker3D?.(THREE,g,{radius:.68,labelY:2.02});
-  g.userData={la,lb};return g;
-}
+const colors=[0xffd84e,0xff5f83,0x55d6b0,0x53c8ff,0x9f7cff,0xff8a4f,0x77dd67,0x42d1d6,0xffb347,0xe66cff,0x6f8cff,0xff6b57],names=['You','Nova','Mika','Rook','Volt','Pip','Zed','Kira','Atlas','Echo','Juno','Blaze'];
+function model(i){return window.SkillArcadeCharacters?.make(THREE,i,{colors,scale:1.02,markerRadius:.74,labelY:2.14})||new THREE.Group()}
 function reset(){
   root.clear();fx.clear();players.length=0;eliminated.length=0;
-  const pts=[[-4.6,4.6],[0,4.9],[4.6,4.6],[-4.9,0],[4.9,0],[-4.6,-4.6],[0,-4.9],[4.6,-4.6]];
+  const pts=Array.from({length:PLAYERS},(_,i)=>{const a=i/PLAYERS*Math.PI*2-.3;return[Math.cos(a)*7.8,Math.sin(a)*7.8]});
   for(let i=0;i<PLAYERS;i++){
     const g=model(i);root.add(g);
-    players.push({id:i,name:names[i],g,pos:new THREE.Vector3(pts[i][0],.05,pts[i][1]),vel:new THREE.Vector3(),alive:true,dashCd:0,dashTime:0,stun:0,facing:new THREE.Vector2(0,-1),lastHit:null,lastHitT:0,kos:0,hitCd:0,bot:i>0,skill:i?[.86,.9,.82,.94,.88,.91,.85][i-1]:1});
+    players.push({id:i,name:names[i],g,pos:new THREE.Vector3(pts[i][0],.05,pts[i][1]),vel:new THREE.Vector3(),alive:true,dashCd:0,dashTime:0,stun:0,facing:new THREE.Vector2(0,-1),lastHit:null,lastHitT:0,kos:0,hitCd:0,bot:i>0,skill:i?[.86,.9,.82,.94,.88,.91,.85,.92,.89,.93,.87][(i-1)%11]:1});
   }
 }
 reset();
-function arenaHalf(){return elapsed<25?7.5:elapsed<50?5.5:3.8}
-function updateRings(){const dropOuter=elapsed>=25,dropMid=elapsed>=50;for(const m of outer)m.position.y+=((dropOuter?-5:-.25)-m.position.y)*.08;for(const m of mid)m.position.y+=((dropMid?-5:-.25)-m.position.y)*.08}
+function arenaHalf(){return elapsed<40?10:elapsed<85?7.2:4.6}
+function updateRings(){const dropOuter=elapsed>=40,dropMid=elapsed>=85;for(const m of outer)m.position.y+=((dropOuter?-5:-.25)-m.position.y)*.08;for(const m of mid)m.position.y+=((dropMid?-5:-.25)-m.position.y)*.08}
 function inputFor(p){
   if(!p.bot){
     const x=(keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0);
@@ -147,7 +139,7 @@ function step(dt){
 function frame(n){
   const dt=Math.min(.05,(n-last)/1000||0);last=n;acc+=dt;while(acc>=FIXED){step(FIXED);acc-=FIXED}
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('show')}
-  renderBoard();$('timeValue').textContent=elapsed<25?'FULL':elapsed<50?'SMALLER':'FINAL';$('walletValue').textContent=money(wallet);renderer.render(scene,camera);requestAnimationFrame(frame);
+  renderBoard();$('timeValue').textContent=elapsed<40?'FULL':elapsed<85?'SMALLER':'FINAL';$('walletValue').textContent=money(wallet);renderer.render(scene,camera);requestAnimationFrame(frame);
 }
 function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}
 addEventListener('resize',resize);resize();

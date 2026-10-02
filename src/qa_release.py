@@ -22,7 +22,7 @@ for d in sorted((ROOT/'games').iterdir()):
     refs=set(re.findall(r"\$\(['\"]([^'\"]+)['\"]\)",js))
     missing=sorted(refs-ids)
     if missing: fail(d.name, 'missing DOM ids: '+', '.join(missing))
-    if d.name!='floor-breaker' and 'addYouMarker3D' not in js:
+    if d.name!='floor-breaker' and not ('addYouMarker3D' in js or 'SkillArcadeCharacters' in js):
         fail(d.name,'missing YOU marker')
     if '../match-bridge.js' not in html or 'game.js' not in html or html.index('../match-bridge.js')>html.index('game.js'):
         fail(d.name,'match bridge must load before game.js')

@@ -2,7 +2,7 @@
 
 Game 03 for Skill Arcade.
 
-- 8 players
+- 12 players
 - Fixed arena camera
 - WASD always matches screen direction
 - Space / DASH launches in the current movement direction
