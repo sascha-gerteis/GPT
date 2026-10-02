@@ -2,7 +2,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 if(!window.THREE){$('startBtn').disabled=true;$('startBtn').textContent='3D ENGINE FAILED TO LOAD';return;}
-const THREE=window.THREE;
+const THREE=window.THREE;const MOBILE_RENDER=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0||innerWidth<900;
 const qs=new URLSearchParams(location.search), rawEntry=Number(qs.get('entry'));
 const ENTRY=[1,5,20].includes(rawEntry)?rawEntry:1;
 const STORAGE='skillArcadeDemoAccountV1', PLAYERS=12, FEE=.05;
@@ -11,17 +11,17 @@ const keys=new Set(), players=[], eliminated=[];
 let state='menu',account=load(),wallet=account.wallet,count=3,elapsed=0,last=performance.now(),acc=0,dashBuffer=0,toastT=0;
 function load(){const f={wallet:25,totalPrizes:0,wins:0,totalMatches:0,matches:[]};try{const d=JSON.parse(localStorage.getItem(STORAGE)||'null');return d?{...f,...d,matches:Array.isArray(d.matches)?d.matches:[]}:f}catch{return f}}
 function save(){account.wallet=Math.max(0,wallet);localStorage.setItem(STORAGE,JSON.stringify(account))}
-function money(v){return `$${Math.max(0,+v||0).toFixed(2)}`}
-function signed(v){return `${v>=0?'+':'-'}$${Math.abs(v).toFixed(2)}`}
+function money(v){return `CR ${Math.max(0,+v||0).toFixed(2)}`}
+function signed(v){return `${v>=0?'+':'-'}CR ${Math.abs(v).toFixed(2)}`}
 function toast(s){$('toast').textContent=s;$('toast').classList.add('show');toastT=1.05}
 function updateEconomy(){
   $('entryValue').textContent=money(ENTRY);$('poolValue').textContent=money(POOL);
   $('p1').textContent=money(PAYOUTS[0]);$('p2').textContent=money(PAYOUTS[1]);$('p3').textContent=money(PAYOUTS[2]);
   $('walletValue').textContent=$('lobbyWallet').textContent=money(wallet);
-  $('startBtn').textContent=wallet>=ENTRY?`ENTER MATCH - ${money(ENTRY)}`:'INSUFFICIENT DEMO BALANCE';$('startBtn').disabled=wallet<ENTRY;
+  $('startBtn').textContent=wallet>=ENTRY?`PLAY MATCH - ${money(ENTRY)}`:'NOT ENOUGH BETA CREDITS';$('startBtn').disabled=wallet<ENTRY;
 }
 const renderer=new THREE.WebGLRenderer({canvas:$('game'),antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));renderer.shadowMap.enabled=true;
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,MOBILE_RENDER?1.25:1.6));renderer.shadowMap.enabled=true;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x201749);scene.fog=new THREE.Fog(0x201749,30,90);
 const camera=new THREE.PerspectiveCamera(56,1,.05,120);camera.position.set(0,18.5,17.5);camera.lookAt(0,0,0);scene.add(camera);
 scene.add(new THREE.HemisphereLight(0xbddcff,0x2d1943,1.7));
@@ -122,7 +122,7 @@ function updateFx(dt){for(let i=fx.children.length-1;i>=0;i--){const o=fx.childr
 function showResult(place){
   const prize=place<=3?PAYOUTS[place-1]:0;wallet+=prize;account.totalPrizes=(account.totalPrizes||0)+prize;if(place===1)account.wins=(account.wins||0)+1;account.totalMatches=(account.totalMatches||0)+1;
   account.matches=account.matches||[];account.matches.unshift({game:'knockout',gameName:'Knockout',place,prize,net:prize-ENTRY,lobby:ENTRY,kos:players[0].kos,detail:`${players[0].kos} KOs - Last standing`,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});account.matches=account.matches.slice(0,50);save();
-  $('resultPlace').textContent=`#${place}`;$('resultTitle').textContent=place===1?'WINNER':place<=3?'PODIUM FINISH':'ELIMINATED';$('resultReason').textContent=place<=3?'You finished in the paid top three.':'You finished outside the paid places.';
+  $('resultPlace').textContent=`#${place}`;$('resultTitle').textContent=place===1?'WINNER':place<=3?'PODIUM FINISH':'ELIMINATED';$('resultReason').textContent=place<=3?'You finished in the top-three podium.':'You finished outside the podium places.';
   $('resultEntry').textContent=`-${money(ENTRY)}`;$('resultPrize').textContent=`+${money(prize)}`;$('resultKos').textContent=String(players[0].kos);$('resultNet').textContent=signed(prize-ENTRY);$('resultWallet').textContent=money(wallet);
   $('playAgainBtn').textContent=wallet>=ENTRY?`PLAY AGAIN - ${money(ENTRY)}`:'BACK TO ARCADE';
   setTimeout(()=>{$('overlay').classList.add('show');$('menuPanel').classList.add('hidden');$('resultPanel').classList.remove('hidden')},300);
@@ -141,8 +141,8 @@ function frame(n){
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('show')}
   renderBoard();$('timeValue').textContent=elapsed<40?'FULL':elapsed<85?'SMALLER':'FINAL';$('walletValue').textContent=money(wallet);renderer.render(scene,camera);requestAnimationFrame(frame);
 }
-function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}
-addEventListener('resize',resize);resize();
+function resize(){const shell=document.querySelector('.game-shell');const w=Math.max(1,shell?.clientWidth||innerWidth),h=Math.max(1,shell?.clientHeight||innerHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();window.visualViewport?.addEventListener('resize',resize,{passive:true});addEventListener('orientationchange',()=>setTimeout(resize,120),{passive:true});
 addEventListener('keydown',e=>{keys.add(e.code);if(e.code==='Space'){e.preventDefault();dashBuffer=.15}});addEventListener('keyup',e=>keys.delete(e.code));
 $('startBtn').onclick=begin;$('playAgainBtn').onclick=()=>wallet>=ENTRY?begin():location.href='../../index.html';$('leaveBtn').onclick=forfeit;
 document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.onpointerdown=e=>{e.preventDefault();keys.add(k)};b.onpointerup=b.onpointercancel=b.onpointerleave=()=>keys.delete(k)});

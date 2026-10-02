@@ -4,20 +4,20 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
   <meta name="theme-color" content="#071018" />
-  <title>Skill Arcade Demo - Floor Breaker</title>
+  <title>Skill Arcade Beta - Floor Breaker</title>
   <link rel="stylesheet" href="style.css" />
 <link rel="stylesheet" href="../arcade-polish.css"></head>
-<body>
+<body class="floor-breaker-game">
   <main id="app">
     <section id="gameShell" class="game-shell" aria-label="Floor Breaker 3D game">
       <canvas id="game"></canvas>
 
-      <div class="demo-ribbon" aria-label="Demo mode">DEMO MODE · NO REAL MONEY</div>
+      <div class="demo-ribbon" aria-label="Demo mode">ONLINE BETA · SKILL PLAY</div>
 
       <div class="top-hud" aria-label="Match HUD">
         <div id="walletCard" class="hud-chip wallet-chip">
-          <span>DEMO WALLET</span>
-          <strong id="walletValue">$10.00</strong>
+          <span>ARCADE CREDITS</span>
+          <strong id="walletValue">CR 10.00</strong>
           <b id="walletPop" class="wallet-pop"></b>
         </div>
         <div class="hud-chip compact"><span>TIME</span><strong id="timeValue">4:00</strong></div>
@@ -54,7 +54,7 @@
         <button id="exitSpectate" class="danger-text" type="button">EXIT</button>
       </div>
 
-      <div id="touchControls" class="touch-controls" aria-hidden="true">
+      <div id="touchControls" class="touch-controls floor-breaker-touch" aria-hidden="true">
         <div id="joystick" class="joystick"><div id="joystickKnob" class="joystick-knob"></div></div>
         <button id="jumpTouch" class="touch-button jump" type="button">JUMP</button>
         <button id="fireTouch" class="touch-button fire" type="button">FIRE</button>
@@ -64,7 +64,7 @@
         <section id="menuPanel" class="modal lobby-modal">
           <header class="lobby-header">
             <div>
-              <div class="brand-line"><a class="arcade-back" href="../../index.html">← ARCADE</a><span class="brand-mark">SA</span><strong>SKILL ARCADE</strong><b>DEMO</b></div>
+              <div class="brand-line"><a class="arcade-back" href="../../index.html">← ARCADE</a><span class="brand-mark">SA</span><strong>SKILL ARCADE</strong><b>BETA</b></div>
               <p class="brand-sub">Competitive games. Transparent entry. Skill decides the result.</p>
             </div>
             <div class="account-badge">
@@ -91,12 +91,12 @@
               <div class="control-copy"><b>WASD</b> move · <b>Mouse</b> look · <b>Click</b> fire · <b>Space</b> jump · aim down to rocket jump</div>
             </section>
 
-            <section class="wallet-panel" aria-label="Demo wallet">
-              <div class="panel-label">DEMO WALLET</div>
+            <section class="wallet-panel" aria-label="Arcade credits">
+              <div class="panel-label">ARCADE CREDITS</div>
               <div class="wallet-main-row">
                 <div>
-                  <span>AVAILABLE BALANCE</span>
-                  <strong id="lobbyWalletBalance">$10.00</strong>
+                  <span>AVAILABLE CREDITS</span>
+                  <strong id="lobbyWalletBalance">CR 10.00</strong>
                 </div>
                 <span class="demo-pill">DEMO FUNDS</span>
               </div>
@@ -104,9 +104,9 @@
                 <button class="wallet-action" type="button" disabled title="Enabled only after legal/payment setup">DEPOSIT</button>
                 <button class="wallet-action" type="button" disabled title="Enabled only after legal/payment setup">WITHDRAW</button>
               </div>
-              <button id="resetDemoBtn" class="reset-demo-btn" type="button">RESET DEMO BALANCE TO $25</button>
+              <button id="resetDemoBtn" class="reset-demo-btn" type="button">RESET BETA CREDITS TO 25</button>
               <div class="account-stats">
-                <div><span>TOTAL PRIZES</span><strong id="lobbyWon">$0.00</strong></div>
+                <div><span>TOTAL PRIZES</span><strong id="lobbyWon">CR 0.00</strong></div>
                 <div><span>MATCHES</span><strong id="lobbyMatches">0</strong></div>
                 <div><span>WINS</span><strong id="lobbyWins">0</strong></div>
               </div>
@@ -115,24 +115,24 @@
             <section class="entry-panel" aria-label="Match economics">
               <div class="entry-heading">
                 <div><span>COMPETITIVE MATCH</span><strong>Floor Breaker · 5 Players</strong></div>
-                <div class="entry-price"><span>ENTRY</span><strong id="entryPriceValue">$1.00</strong></div>
+                <div class="entry-price"><span>TIER</span><strong id="entryPriceValue">CR 1.00</strong></div>
               </div>
 
               <div class="pool-flow">
-                <div><span>Gross entries</span><strong id="grossPoolValue">$12.00</strong></div>
-                <div class="minus"><span>Platform fee</span><strong id="feeValue">−$0.25 · 5%</strong></div>
-                <div class="pool-total"><span>Prize pool</span><strong id="prizePoolValue">$11.40</strong></div>
+                <div><span>Match credits</span><strong id="grossPoolValue">CR 12.00</strong></div>
+                <div class="minus"><span>Platform fee</span><strong id="feeValue">−CR 0.60 · 5%</strong></div>
+                <div class="pool-total"><span>Podium pool</span><strong id="prizePoolValue">CR 11.40</strong></div>
               </div>
 
               <div class="payout-row" aria-label="Prize distribution">
-                <div class="first"><span>1ST</span><strong id="payout1Value">$6.00</strong></div>
-                <div><span>2ND</span><strong id="payout2Value">$3.40</strong></div>
-                <div><span>3RD</span><strong id="payout3Value">$2.00</strong></div>
-                <div class="muted"><span>4–5TH</span><strong>$0.00</strong></div>
+                <div class="first"><span>1ST</span><strong id="payout1Value">CR 6.00</strong></div>
+                <div><span>2ND</span><strong id="payout2Value">CR 3.40</strong></div>
+                <div><span>3RD</span><strong id="payout3Value">CR 2.00</strong></div>
+                <div class="muted"><span>4–5TH</span><strong>CR 0.00</strong></div>
               </div>
 
-              <button id="startBtn" class="primary-btn" type="button">ENTER MATCH · $1.00</button>
-              <div id="entryMessage" class="entry-message">$1.00 demo entry is deducted when the match starts.</div>
+              <button id="startBtn" class="primary-btn" type="button">PLAY MATCH · CR 1.00</button>
+              <div id="entryMessage" class="entry-message">CR 1.00 demo entry is deducted when the match starts.</div>
             </section>
 
             <section class="history-panel" aria-label="Recent demo matches">
@@ -155,7 +155,7 @@
         <section id="resultPanel" class="modal result-modal hidden">
           <div class="result-topline">
             <div>
-              <div class="eyebrow">MATCH SETTLED · DEMO</div>
+              <div class="eyebrow">MATCH RESULT · BETA</div>
               <div id="winnerName" class="winner-name">WINNER: —</div>
             </div>
             <div class="settlement-status"><i></i> SETTLED</div>
@@ -165,20 +165,20 @@
           <p id="resultReason"></p>
 
           <div class="settlement-card">
-            <div class="settlement-line"><span>Entry fee</span><strong id="resultEntry">−$1.00</strong></div>
-            <div class="settlement-line"><span>KO demo bonuses</span><strong id="resultAction">+$0.00</strong></div>
-            <div class="settlement-line"><span>Placement prize</span><strong id="resultPrize">+$0.00</strong></div>
+            <div class="settlement-line"><span>Entry fee</span><strong id="resultEntry">−CR 1.00</strong></div>
+            <div class="settlement-line"><span>KO demo bonuses</span><strong id="resultAction">+CR 0.00</strong></div>
+            <div class="settlement-line"><span>Placement prize</span><strong id="resultPrize">+CR 0.00</strong></div>
             <div class="settlement-line fee"><span>Platform fee</span><strong id="resultFee">5% total pool fee</strong></div>
-            <div class="settlement-line net"><span>Match net</span><strong id="resultNet">$0.00</strong></div>
+            <div class="settlement-line net"><span>Credit change</span><strong id="resultNet">CR 0.00</strong></div>
           </div>
 
           <div class="result-summary-grid">
             <div><span>BLOCKS</span><strong id="resultBlocks">0</strong></div>
-            <div><span>DEMO WALLET</span><strong id="resultWallet">$0.00</strong></div>
+            <div><span>ARCADE CREDITS</span><strong id="resultWallet">CR 0.00</strong></div>
           </div>
 
           <div class="result-actions">
-            <button id="playAgainBtn" class="primary-btn" type="button">PLAY AGAIN · $1.00</button>
+            <button id="playAgainBtn" class="primary-btn" type="button">PLAY AGAIN · CR 1.00</button>
             <button id="exitBtn" class="secondary-btn" type="button">BACK TO LOBBY</button>
           </div>
           <small>Demo settlement only. No real funds are transferred.</small>

@@ -34,3 +34,19 @@ A headless Chromium screenshot/render pass was attempted in the build environmen
 - penetration testing, load testing, observability and incident response.
 
 These items must be completed before enabling any real-money competition.
+
+## V6.5 Mobile / Arcade QA
+- Fixed Floor Breaker touch-control visibility conflict caused by the shared polish layer.
+- Floor Breaker now clears joystick/fire/key state on elimination, blur and hidden-tab transitions.
+- Shared mobile controls only become interactive during gameplay; lobby/result overlays cannot be covered by the joystick layer.
+- Shared controls use pointer capture/release, safe-area positioning, visual viewport resize handling and orientation recovery.
+- All 10 non-Floor-Breaker games use mobile render caps and game-shell-sized renderer resizing.
+- Wall Dodge 12-player formation now uses one collision plane in a wider arena; wall geometry, gaps, clamps and camera were resized together.
+- Obstacle Sprint, Maze Rush and Red Light Run no longer terminate the human player's run just because bots fill the first three positions.
+- Game and shell copy now uses beta credits, match tiers and podium rewards rather than cash-like dollar presentation.
+- `qa_release.py`: PASS (11 games).
+- `qa_mobile.py`: PASS (11 games).
+- Direct mobile layout render QA: PASS across 22 cases (11 games x portrait/landscape), checking modal overflow and touch-control viewport placement.
+
+### Runtime caveat
+This environment blocks normal browser navigation to local/file URLs, so network-loaded Three.js gameplay could not be driven end-to-end here. Mobile HTML/CSS was rendered directly in headless Chromium for layout verification; JavaScript syntax and mobile/game invariants were checked separately. A real-device smoke test remains recommended before a public multiplayer pilot.

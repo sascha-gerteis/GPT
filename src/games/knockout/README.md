@@ -9,4 +9,4 @@ Game 03 for Skill Arcade.
 - Knock opponents into lava
 - Arena shrinks during the match
 - Top 3 receive demo payouts
-- $1 / $5 / $20 demo lobbies through the shared arcade
+- CR 1 / CR 5 / CR 20 demo lobbies through the shared arcade

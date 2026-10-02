@@ -65,7 +65,7 @@
   function practicePaint(){
     if(!practice)return;
     const ids=['entryValue','resultEntry'];
-    ids.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=id==='resultEntry'?'$0.00':'FREE'});
+    ids.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=id==='resultEntry'?'CR 0.00':'FREE'});
     ['poolValue','p1','p2','p3','resultPrize','resultNet'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='—'});
     ['walletValue','lobbyWallet','resultWallet'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=money(actualBalance())});
     const ribbon=document.querySelector('.demo-ribbon');if(ribbon)ribbon.textContent='PRACTICE · FREE · NO PRIZES';

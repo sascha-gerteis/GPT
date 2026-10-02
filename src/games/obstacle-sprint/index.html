@@ -4,14 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
   <meta name="theme-color" content="#101827" />
-  <title>Obstacle Sprint · Skill Arcade Demo</title>
+  <title>Obstacle Sprint · Skill Arcade Beta</title>
   <link rel="stylesheet" href="style.css" />
 <link rel="stylesheet" href="../arcade-polish.css"></head>
 <body>
 <main id="gameShell" class="game-shell">
   <canvas id="game"></canvas>
-  <div class="demo-ribbon">DEMO · NO REAL MONEY</div>
-  <div class="hud top-left"><span>DEMO WALLET</span><strong id="walletValue">$25.00</strong></div><div class="hud map-hud"><span>MAP</span><strong data-map-name>LOADING</strong></div>
+  <div class="demo-ribbon">ONLINE BETA · SKILL PLAY</div>
+  <div class="hud top-left"><span>ARCADE CREDITS</span><strong id="walletValue">CR 25.00</strong></div><div class="hud map-hud"><span>MAP</span><strong data-map-name>LOADING</strong></div>
   <div class="hud top-center"><div><span>POSITION</span><strong id="positionValue">1 / 12</strong></div><div><span>TIME</span><strong id="timeValue">2:30</strong></div><div><span>CHECKPOINT</span><strong id="checkpointValue">1 / 5</strong></div></div>
   <button id="leaveBtn" class="leave-btn hidden" type="button">LEAVE</button>
   <div id="leaderboard" class="leaderboard"></div>
@@ -23,22 +23,22 @@
 
   <div id="overlay" class="overlay show">
     <section id="menuPanel" class="modal menu-modal">
-      <div class="modal-top"><a href="../../index.html" class="back-link">← ARCADE</a><span class="demo-badge">DEMO</span></div>
-      <div class="title-row"><div><span class="kicker">GAME 02</span><h1>OBSTACLE<br><b>SPRINT</b></h1></div><div class="wallet-box"><span>BALANCE</span><strong id="lobbyWallet">$25.00</strong></div></div>
+      <div class="modal-top"><a href="../../index.html" class="back-link">← ARCADE</a><span class="demo-badge">BETA</span></div>
+      <div class="title-row"><div><span class="kicker">GAME 02</span><h1>OBSTACLE<br><b>SPRINT</b></h1></div><div class="wallet-box"><span>CREDITS</span><strong id="lobbyWallet">CR 25.00</strong></div></div>
       <p class="tagline">Race the course. First three finishers get paid.</p><div class="map-preview"><span>THIS MATCH</span><strong data-map-name>LOADING</strong><small>Course changes every entry</small></div>
-      <div class="facts"><div><b>12</b><span>players</span></div><div><b>90s</b><span>max</span></div><div><b>TOP 3</b><span>paid</span></div></div>
-      <div class="entry-card"><div><span>ENTRY</span><strong id="entryValue">$1.00</strong></div><div><span>PRIZE POOL</span><strong id="poolValue">$11.40</strong></div><div><span>FEE</span><strong id="feeValue">5%</strong></div></div>
-      <div class="payouts"><div class="first"><span>1ST</span><strong id="p1">$6.00</strong></div><div><span>2ND</span><strong id="p2">$3.40</strong></div><div><span>3RD</span><strong id="p3">$2.00</strong></div></div>
-      <button id="startBtn" class="primary" type="button">ENTER MATCH · $1.00</button>
-      <small id="entryMessage">Demo entry is deducted when the match starts.</small>
+      <div class="facts"><div><b>12</b><span>players</span></div><div><b>90s</b><span>max</span></div><div><b>TOP 3</b><span>podium</span></div></div>
+      <div class="entry-card"><div><span>TIER</span><strong id="entryValue">CR 1.00</strong></div><div><span>PODIUM POOL</span><strong id="poolValue">CR 11.40</strong></div><div><span>SERVICE FEE</span><strong id="feeValue">5%</strong></div></div>
+      <div class="payouts"><div class="first"><span>1ST</span><strong id="p1">CR 6.00</strong></div><div><span>2ND</span><strong id="p2">CR 3.40</strong></div><div><span>3RD</span><strong id="p3">CR 2.00</strong></div></div>
+      <button id="startBtn" class="primary" type="button">PLAY MATCH · CR 1.00</button>
+      <small id="entryMessage">Beta credits are used only when the match starts. No real money.</small>
     </section>
 
     <section id="resultPanel" class="modal result-modal hidden">
-      <span class="kicker">MATCH SETTLED · DEMO</span>
+      <span class="kicker">MATCH RESULT · BETA</span>
       <div id="resultPlace" class="result-place">#1</div>
       <h2 id="resultTitle">PODIUM FINISH</h2>
       <p id="resultReason">You finished in the top three.</p>
-      <div class="settlement"><div><span>Entry</span><strong id="resultEntry">−$1.00</strong></div><div><span>Prize</span><strong id="resultPrize">+$6.00</strong></div><div class="net"><span>Match net</span><strong id="resultNet">+$3.50</strong></div><div><span>Demo wallet</span><strong id="resultWallet">$28.50</strong></div></div>
+      <div class="settlement"><div><span>Match tier</span><strong id="resultEntry">−CR 1.00</strong></div><div><span>Podium reward</span><strong id="resultPrize">+CR 6.00</strong></div><div class="net"><span>Credit change</span><strong id="resultNet">+CR 3.50</strong></div><div><span>Arcade credits</span><strong id="resultWallet">CR 28.50</strong></div></div>
       <div class="result-actions"><button id="playAgainBtn" class="primary" type="button">PLAY AGAIN</button><a class="secondary" href="../../index.html">BACK TO ARCADE</a></div>
     </section>
   </div>

@@ -8,7 +8,7 @@
 - Falling respawns the player at the most recent checkpoint.
 - Identical movement capability for all players.
 - Fixed obstacle cycles; no random power-ups.
-- Uses the shared demo wallet and $1 / $5 / $20 lobby tiers.
+- Uses the shared beta-credit profile and CR 1 / CR 5 / CR 20 lobby tiers.
 
 ## V2.1 gameplay polish
 

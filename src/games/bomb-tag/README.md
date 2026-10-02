@@ -10,5 +10,5 @@ Game 04 for Skill Arcade.
 - Carrier is eliminated when the fuse reaches zero
 - Match continues until one player remains
 - Top 3 receive demo payouts
-- $1 / $5 / $20 demo lobbies through the shared arcade
+- CR 1 / CR 5 / CR 20 demo lobbies through the shared arcade
 - No real-money processing is enabled

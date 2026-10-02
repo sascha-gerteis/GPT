@@ -65,6 +65,7 @@
   }
 
   const THREE = window.THREE;
+  const IS_TOUCH = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0 || innerWidth < 900;
 
   const query = new URLSearchParams(location.search);
   const requestedEntry = Number(query.get('entry'));
@@ -156,6 +157,7 @@
   let fireRequested = false;
   let joystickPointer = null;
   let touchLookPointer = null;
+  let touchFireHeld = false;
   let touchLookLast = null;
   const touchMove = { x: 0, z: 0 };
 
@@ -173,7 +175,7 @@
   const raycaster = new THREE.Raycaster();
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.7));
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, IS_TOUCH ? 1.30 : 1.7));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -197,7 +199,7 @@
   const sun = new THREE.DirectionalLight(0xffffff, 2.0);
   sun.position.set(-16, 28, 14);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.mapSize.set(IS_TOUCH ? 1024 : 2048, IS_TOUCH ? 1024 : 2048);
   sun.shadow.camera.left = -28;
   sun.shadow.camera.right = 28;
   sun.shadow.camera.top = 28;
@@ -270,8 +272,8 @@
   const tileGeo = new THREE.BoxGeometry(TILE * .94, TILE_H, TILE * .94);
   const floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .64, metalness: .04, vertexColors: true });
 
-  function money(v) { return `$${Math.max(0, v).toFixed(2)}`; }
-  function signedMoney(v) { return `${v >= 0 ? '+' : '−'}$${Math.abs(v).toFixed(2)}`; }
+  function money(v) { return `CR ${Math.max(0, v).toFixed(2)}`; }
+  function signedMoney(v) { return `${v >= 0 ? '+' : '−'}CR ${Math.abs(v).toFixed(2)}`; }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
   function updateEconomyLabels() {
@@ -313,7 +315,7 @@
     const canEnter = wallet + 1e-9 >= ENTRY_FEE;
     if (startBtn) {
       startBtn.disabled = !canEnter;
-      startBtn.textContent = canEnter ? `ENTER MATCH · ${money(ENTRY_FEE)}` : 'INSUFFICIENT DEMO BALANCE';
+      startBtn.textContent = canEnter ? `PLAY MATCH · ${money(ENTRY_FEE)}` : 'NOT ENOUGH BETA CREDITS';
     }
     if (playAgainBtn) {
       playAgainBtn.disabled = !canEnter;
@@ -619,7 +621,7 @@
   }
 
   function getPlayerInput() {
-    const coarse=matchMedia('(pointer:coarse)').matches;
+    const coarse=IS_TOUCH;
     if(coarse){let x=touchMove.x,z=touchMove.z;const len=Math.hypot(x,z);if(len>1){x/=len;z/=len;}const fx=Math.sin(lookYaw),fz=-Math.cos(lookYaw),rx=Math.cos(lookYaw),rz=Math.sin(lookYaw);return{x:fx*(-z)+rx*x,z:fz*(-z)+rz*x};}
     let f=0,s=0;if(keys.has('KeyW'))f+=1;if(keys.has('KeyS'))f-=1;if(keys.has('KeyD'))s+=1;if(keys.has('KeyA'))s-=1;const len=Math.hypot(f,s);if(len>1){f/=len;s/=len;}
     const fx=Math.sin(lookYaw),fz=-Math.cos(lookYaw),rx=Math.cos(lookYaw),rz=Math.sin(lookYaw);return{x:fx*f+rx*s,z:fz*f+rz*s};
@@ -680,7 +682,7 @@
     for(const p of players)updatePlayer(p,dt);
     jumpRequested=false;
     resolvePlayerCollisions();updateProjectiles(dt);updateEffects(dt);
-    if(fireRequested&&state==='playing'){fireRequested=false;firePlayerRocket();}
+    if((fireRequested||touchFireHeld)&&state==='playing'){fireRequested=false;firePlayerRocket();}
     const alive=players.filter(p=>p.alive);
     if(alive.length<=1&&!endLocked){finishMatch(alive.length===1?`${alive[0].name} is the last player standing.`:'No player survived.');return;}
     if(roundTime<=0&&!endLocked){
@@ -698,14 +700,14 @@
   }
 
   function enterSpectating() {
-    state='spectating';const alive=players.filter(p=>p.alive);spectateId=alive[0]?.id??null;spectatorBar.classList.remove('hidden');crosshair.classList.add('hidden');touchControls.classList.remove('active');if(document.pointerLockElement===canvas&&document.exitPointerLock)document.exitPointerLock();updateSpectatorUI();addFeed('<b>You are out.</b> Spectating remaining players.','');
+    state='spectating';const alive=players.filter(p=>p.alive);spectateId=alive[0]?.id??null;spectatorBar.classList.remove('hidden');crosshair.classList.add('hidden');touchControls.classList.remove('active');touchControls.setAttribute('aria-hidden','true');touchFireHeld=false;resetJoystick();keys.clear();if(document.pointerLockElement===canvas&&document.exitPointerLock)document.exitPointerLock();updateSpectatorUI();addFeed('<b>You are out.</b> Spectating remaining players.','');
   }
   function selectSpectator(step) {const alive=players.filter(p=>p.alive);if(!alive.length){spectateId=null;return;}let i=alive.findIndex(p=>p.id===spectateId);if(i<0)i=0;i=(i+step+alive.length)%alive.length;spectateId=alive[i].id;updateSpectatorUI();}
   function updateSpectatorUI(){const p=players[spectateId];spectateName.textContent=p&&p.alive?`${p.name} · ${p.blocks} BLOCKS`:'SEARCHING…';}
 
   function finishMatch(reason) {
     if(endLocked||state==='results'||state==='menu')return;endLocked=true;state='results';
-    spectatorBar.classList.add('hidden');touchControls.classList.remove('active');crosshair.classList.add('hidden');leaveBtn.classList.add('hidden');if(document.pointerLockElement===canvas&&document.exitPointerLock)document.exitPointerLock();
+    spectatorBar.classList.add('hidden');touchControls.classList.remove('active');touchControls.setAttribute('aria-hidden','true');crosshair.classList.add('hidden');leaveBtn.classList.add('hidden');if(document.pointerLockElement===canvas&&document.exitPointerLock)document.exitPointerLock();
     const ranking=getRanking(),you=players[0],winner=ranking[0],place=Math.max(1,ranking.findIndex(p=>p.id===0)+1),prize=place<=PRIZES.length?PRIZES[place-1]:0;
     if(prize>0)creditWallet(prize,`#${place} PRIZE`);
     const net = you.earnings + prize - ENTRY_FEE;
@@ -729,12 +731,12 @@
     if (wallet + 1e-9 < ENTRY_FEE) { updateLobbyAccount(); showToast('RESET DEMO ACCOUNT TO PLAY','danger'); return; }
     ensureAudio();wallet-=ENTRY_FEE;saveDemoAccount();updateLobbyAccount();activeMatchRecorded=false;fireRequested=false;jumpRequested=false;resetArena();roundTime=ROUND_SECONDS;countdownTime=3;elapsed=0;accumulator=0;state='countdown';endLocked=false;
     menuPanel.classList.remove('hidden');resultPanel.classList.add('hidden');overlay.classList.remove('show');countdownEl.classList.remove('hidden');countdownLabel.textContent='MATCH STARTS IN';countdownNumber.textContent='3';leaveBtn.classList.remove('hidden');spectatorBar.classList.add('hidden');
-    if(matchMedia('(pointer:coarse)').matches)touchControls.classList.add('active');else{crosshair.classList.remove('hidden');try{const r=canvas.requestPointerLock&&canvas.requestPointerLock();if(r&&r.catch)r.catch(()=>{});}catch(_){}}
+    if(IS_TOUCH){touchControls.classList.add('active');touchControls.setAttribute('aria-hidden','false');}else{crosshair.classList.remove('hidden');try{const r=canvas.requestPointerLock&&canvas.requestPointerLock();if(r&&r.catch)r.catch(()=>{});}catch(_){}}
     addFeed('<b>3 second countdown.</b> Bots cannot fire until GO.','');sfx('count');updateUI(true);
   }
 
   function returnToLobby() {
-    if(document.pointerLockElement===canvas&&document.exitPointerLock)document.exitPointerLock();state='menu';keys.clear();touchMove.x=0;touchMove.z=0;resetJoystick();spectatorBar.classList.add('hidden');touchControls.classList.remove('active');countdownEl.classList.add('hidden');crosshair.classList.add('hidden');leaveBtn.classList.add('hidden');resultPanel.classList.add('hidden');menuPanel.classList.remove('hidden');overlay.classList.add('show');matchStateBadge.textContent='LOBBY';updateLobbyAccount();
+    if(document.pointerLockElement===canvas&&document.exitPointerLock)document.exitPointerLock();state='menu';keys.clear();touchMove.x=0;touchMove.z=0;resetJoystick();spectatorBar.classList.add('hidden');touchControls.classList.remove('active');touchControls.setAttribute('aria-hidden','true');countdownEl.classList.add('hidden');crosshair.classList.add('hidden');leaveBtn.classList.add('hidden');resultPanel.classList.add('hidden');menuPanel.classList.remove('hidden');overlay.classList.add('show');matchStateBadge.textContent='LOBBY';updateLobbyAccount();
   }
   function recordActiveForfeit(){if(activeMatchRecorded)return;const you=players[0];recordMatch(null,0,you?.earnings||0,you?.blocks||0,you?.kos||0,true);}
   function forfeitMatch(){if(state==='playing'||state==='spectating'||state==='countdown'){recordActiveForfeit();returnToLobby();}}
@@ -755,7 +757,7 @@
   function updateCamera(dt) {
     const p=cameraSubject();
     if(state==='menu'){viewWeapon.visible=false;const t=performance.now()*.00007,tmpPos=new THREE.Vector3(Math.sin(t)*28,20,Math.cos(t)*28);camera.position.lerp(tmpPos,lerpFactor(1.4,dt));camera.lookAt(0,0,0);return;}
-    if(!p)return;const first=!matchMedia('(pointer:coarse)').matches&&p.id===0&&p.alive&&(state==='playing'||state==='countdown');viewWeapon.visible=first;const you=players[0];if(you&&you.alive)you.group.visible=!first;
+    if(!p)return;const first=!IS_TOUCH&&p.id===0&&p.alive&&(state==='playing'||state==='countdown');viewWeapon.visible=first;const you=players[0];if(you&&you.alive)you.group.visible=!first;
     if(first){camera.position.set(p.x,p.y+1.46,p.z);const cp=Math.cos(lookPitch);tmp2.set(camera.position.x+Math.sin(lookYaw)*cp*20,camera.position.y+Math.sin(lookPitch)*20,camera.position.z-Math.cos(lookYaw)*cp*20);if(cameraShake>.001){camera.position.x+=rand(-cameraShake,cameraShake);camera.position.y+=rand(-cameraShake*.35,cameraShake*.35);camera.position.z+=rand(-cameraShake,cameraShake);cameraShake*=Math.exp(-15*dt);}camera.lookAt(tmp2);const speed=Math.hypot(p.vx,p.vz),bob=p.grounded?Math.sin(elapsed*10.5)*Math.min(.015,speed*.0024):0,recoil=viewWeapon.userData.recoil||0;viewWeapon.userData.recoil=Math.max(0,recoil-dt*8);const kick=recoil*recoil,base=viewWeapon.userData.base;viewWeapon.position.set(base.x+bob*.4,base.y+Math.abs(bob)-kick*.03,base.z+kick*.15);viewWeapon.rotation.x=-.04+kick*.12;return;}
     const fx=p.facingX,fz=p.facingZ,l=Math.hypot(fx,fz)||1,nx=fx/l,nz=fz/l;tmp.set(p.x-nx*6.0,p.y+4.8,p.z-nz*6.0);camera.position.lerp(tmp,lerpFactor(7,dt));tmp2.set(p.x,p.y+.6,p.z);camera.lookAt(tmp2);
   }
@@ -773,20 +775,20 @@
   function loop(now){const frameDt=clamp((now-lastFrame)/1000,0,.05);lastFrame=now;resizeRenderer();updateCountdown(frameDt);accumulator+=frameDt;while(accumulator>=FIXED_DT){updateMatch(FIXED_DT);accumulator-=FIXED_DT;}if(!(state==='playing'||state==='spectating'))updateEffects(frameDt);lavaUniforms.uTime.value=now*.001;lavaLight.intensity=2.6+Math.sin(now*.0028)*.25;updateCamera(frameDt);updateWallet(frameDt);if(toastTimer>0){toastTimer-=frameDt;if(toastTimer<=0)toastEl.className='toast';}uiTimer-=frameDt;if(uiTimer<=0){uiTimer=.1;updateUI();}renderer.render(scene,camera);requestAnimationFrame(loop);}
 
   startBtn.addEventListener('click',startMatch);playAgainBtn.addEventListener('click',()=>{if(playAgainBtn.disabled)return;startMatch();});exitBtn.addEventListener('click',returnToLobby);leaveBtn.addEventListener('click',forfeitMatch);newMatchSpectate.addEventListener('click',abandonAndStartNew);exitSpectate.addEventListener('click',()=>{recordActiveForfeit();returnToLobby();});spectatePrev.addEventListener('click',()=>selectSpectator(-1));spectateNext.addEventListener('click',()=>selectSpectator(1));
-  resetDemoBtn.addEventListener('click',()=>{wallet=DEMO_START_BALANCE;walletShown=wallet;saveDemoAccount();updateLobbyAccount();showToast('DEMO BALANCE RESET','reward');});
+  resetDemoBtn.addEventListener('click',()=>{wallet=DEMO_START_BALANCE;walletShown=wallet;saveDemoAccount();updateLobbyAccount();showToast('BETA CREDITS RESET','reward');});
   soundBtn.addEventListener('click',()=>{soundEnabled=!soundEnabled;soundBtn.textContent=soundEnabled?'SOUND ON':'SOUND OFF';if(soundEnabled){ensureAudio();tone(590,.08,'sine',.018,760);}});
 
   window.addEventListener('keydown',ev=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(ev.code)&&state==='playing')ev.preventDefault();if(ev.code==='Escape'){if(document.pointerLockElement===canvas){document.exitPointerLock();return;}if(state==='spectating'||state==='results')returnToLobby();else if(state==='playing'||state==='countdown')forfeitMatch();return;}keys.add(ev.code);if(ev.code==='Space'&&!ev.repeat&&state==='playing')jumpRequested=true;});
   window.addEventListener('keyup',ev=>keys.delete(ev.code));window.addEventListener('blur',()=>keys.clear());
-  document.addEventListener('pointerlockchange',()=>{pointerLocked=document.pointerLockElement===canvas;if(!matchMedia('(pointer:coarse)').matches&&(state==='playing'||state==='countdown'))crosshair.classList.remove('hidden');});
+  document.addEventListener('pointerlockchange',()=>{pointerLocked=document.pointerLockElement===canvas;if(!IS_TOUCH&&(state==='playing'||state==='countdown'))crosshair.classList.remove('hidden');});
   document.addEventListener('mousemove',ev=>{if(!pointerLocked||!(state==='playing'||state==='countdown'))return;lookYaw+=ev.movementX*.00225;lookPitch=clamp(lookPitch-ev.movementY*.00205,-1.45,1.30);});
-  canvas.addEventListener('pointerdown',ev=>{if(state!=='playing')return;ensureAudio();if(matchMedia('(pointer:coarse)').matches){if(ev.clientX>innerWidth*.34){touchLookPointer=ev.pointerId;touchLookLast={x:ev.clientX,y:ev.clientY};canvas.setPointerCapture(ev.pointerId);}return;}if(document.pointerLockElement!==canvas){canvas.requestPointerLock?.();return;}fireRequested=true;});
+  canvas.addEventListener('pointerdown',ev=>{if(state!=='playing')return;ensureAudio();if(IS_TOUCH){if(ev.clientX>innerWidth*.34){touchLookPointer=ev.pointerId;touchLookLast={x:ev.clientX,y:ev.clientY};canvas.setPointerCapture(ev.pointerId);}return;}if(document.pointerLockElement!==canvas){canvas.requestPointerLock?.();return;}fireRequested=true;});
   canvas.addEventListener('pointermove',ev=>{if(ev.pointerId!==touchLookPointer||!touchLookLast)return;const dx=ev.clientX-touchLookLast.x,dy=ev.clientY-touchLookLast.y;lookYaw+=dx*.008;lookPitch=clamp(lookPitch-dy*.007,-1.35,1.15);touchLookLast={x:ev.clientX,y:ev.clientY};});
   canvas.addEventListener('pointerup',ev=>{if(ev.pointerId===touchLookPointer){touchLookPointer=null;touchLookLast=null;}});canvas.addEventListener('pointercancel',()=>{touchLookPointer=null;touchLookLast=null;});canvas.addEventListener('contextmenu',ev=>ev.preventDefault());
   joystick.addEventListener('pointerdown',ev=>{if(state!=='playing')return;ev.preventDefault();ev.stopPropagation();joystickPointer=ev.pointerId;joystick.setPointerCapture(ev.pointerId);updateJoystick(ev);});joystick.addEventListener('pointermove',ev=>{if(ev.pointerId===joystickPointer){ev.preventDefault();updateJoystick(ev);}});joystick.addEventListener('pointerup',ev=>{if(ev.pointerId===joystickPointer)resetJoystick();});joystick.addEventListener('pointercancel',resetJoystick);
-  jumpTouch.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();if(state==='playing')jumpRequested=true;});fireTouch.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();if(state==='playing')fireRequested=true;});
+  jumpTouch.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();if(state==='playing')jumpRequested=true;});fireTouch.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();if(state==='playing'){touchFireHeld=true;fireRequested=true;fireTouch.setPointerCapture?.(ev.pointerId);}});for(const evt of ['pointerup','pointercancel','lostpointercapture'])fireTouch.addEventListener(evt,()=>{touchFireHeld=false;});
 
-  const ro=new ResizeObserver(resizeRenderer);ro.observe(shell);
+  const ro=new ResizeObserver(resizeRenderer);ro.observe(shell);window.visualViewport?.addEventListener('resize',resizeRenderer,{passive:true});window.addEventListener('orientationchange',()=>setTimeout(resizeRenderer,120),{passive:true});document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();touchFireHeld=false;resetJoystick();}});
   if(new URLSearchParams(location.search).has('qa'))window.__FB_QA={state:()=>state,alive:()=>players.filter(p=>p.alive).length,kill:id=>{const p=players[id];if(p)eliminatePlayer(p);},support:(x,z)=>supportAt(x,z),blocks:()=>players[0]?.blocks??0,wallet:()=>wallet};
 
   updateEconomyLabels();updateLobbyAccount();resetArena();updateUI(true);requestAnimationFrame(loop);
