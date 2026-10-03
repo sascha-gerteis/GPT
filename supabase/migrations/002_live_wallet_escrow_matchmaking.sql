@@ -240,7 +240,7 @@ begin
   select * into rt from public.live_runtime where id=true;
   if not coalesce(rt.cash_mode_enabled,false) or not coalesce(rt.paid_matchmaking_enabled,false) then raise exception 'paid matchmaking disabled'; end if;
   if p_entry_amount_atomic <= 0 then raise exception 'entry amount must be positive'; end if;
-  if p_game_slug not in ('floor-breaker','obstacle-sprint','knockout','bomb-tag','falling-tiles','red-light-run','coin-rush','safe-zone','wall-dodge','maze-rush','meteor-dodge') then raise exception 'unsupported game'; end if;
+  if p_game_slug not in ('floor-breaker','obstacle-sprint','knockout','bomb-tag','falling-tiles','red-light-run','coin-rush','safe-zone','wall-dodge','maze-rush','meteor-dodge','laser-grid','king-hill','rising-lava','target-blitz','color-collapse','push-arena','checkpoint-rush','moving-maze','hook-race','floor-is-lava','dodgeball-arena','reaction-gates','gravity-flip','ice-run','platform-panic','cannon-run','shadow-sprint','zone-capture','speed-climb','one-shot') then raise exception 'unsupported game'; end if;
   p_region := coalesce(nullif(trim(p_region),''),'global');
   perform pg_advisory_xact_lock(hashtext('skill-arcade-paid:'||p_game_slug||':'||p_region||':'||p_entry_amount_atomic::text));
   update public.entry_reservations set status='expired' where status='quoted' and expires_at<=now();
@@ -250,7 +250,7 @@ begin
     order by m.created_at limit 1 for update skip locked;
   if v_match_id is null then
     insert into public.matches(game_slug,region,target_players,status,game_version,entry_amount_atomic,currency,chain_id,escrow_contract_address)
-      values(p_game_slug,p_region,12,'forming','v6.6',p_entry_amount_atomic,upper(p_currency),p_chain_id,p_escrow_address) returning id into v_match_id;
+      values(p_game_slug,p_region,24,'forming','v6.7',p_entry_amount_atomic,upper(p_currency),p_chain_id,p_escrow_address) returning id into v_match_id;
     v_created := true;
   end if;
   insert into public.entry_reservations(user_id,game_slug,region,wallet_address,chain_id,token_address,entry_amount_atomic,match_id,status,expires_at)
@@ -303,7 +303,7 @@ as $$
 declare
   uid uuid := auth.uid();
   v_match_id uuid;
-  v_target integer := 12;
+  v_target integer := 24;
   v_count integer;
   v_seat integer;
   v_status text;
@@ -311,7 +311,7 @@ declare
   res public.entry_reservations%rowtype;
 begin
   if uid is null then raise exception 'authentication required'; end if;
-  if p_game_slug not in ('floor-breaker','obstacle-sprint','knockout','bomb-tag','falling-tiles','red-light-run','coin-rush','safe-zone','wall-dodge','maze-rush','meteor-dodge') then
+  if p_game_slug not in ('floor-breaker','obstacle-sprint','knockout','bomb-tag','falling-tiles','red-light-run','coin-rush','safe-zone','wall-dodge','maze-rush','meteor-dodge','laser-grid','king-hill','rising-lava','target-blitz','color-collapse','push-arena','checkpoint-rush','moving-maze','hook-race','floor-is-lava','dodgeball-arena','reaction-gates','gravity-flip','ice-run','platform-panic','cannon-run','shadow-sprint','zone-capture','speed-climb','one-shot') then
     raise exception 'unsupported game';
   end if;
   p_region := coalesce(nullif(trim(p_region),''),'global');
@@ -339,7 +339,7 @@ begin
 
   if v_match_id is null then
     insert into public.matches(game_slug,region,target_players,status,game_version,entry_amount_atomic,currency,chain_id,escrow_contract_address)
-    values(p_game_slug,p_region,v_target,'forming','v6.6',p_entry_amount_atomic,p_currency,rt.chain_id,rt.escrow_contract_address)
+    values(p_game_slug,p_region,v_target,'forming','v6.7',p_entry_amount_atomic,p_currency,rt.chain_id,rt.escrow_contract_address)
     returning id into v_match_id;
   end if;
 
@@ -389,10 +389,10 @@ create or replace function public.join_matchmaking_service(
 ) returns jsonb
 language plpgsql security definer set search_path=public as $$
 declare
-  v_match_id uuid; v_target integer := 12; v_count integer; v_seat integer; v_status text;
+  v_match_id uuid; v_target integer := 24; v_count integer; v_seat integer; v_status text;
 begin
   if p_user_id is null then raise exception 'user required'; end if;
-  if p_game_slug not in ('floor-breaker','obstacle-sprint','knockout','bomb-tag','falling-tiles','red-light-run','coin-rush','safe-zone','wall-dodge','maze-rush','meteor-dodge') then raise exception 'unsupported game'; end if;
+  if p_game_slug not in ('floor-breaker','obstacle-sprint','knockout','bomb-tag','falling-tiles','red-light-run','coin-rush','safe-zone','wall-dodge','maze-rush','meteor-dodge','laser-grid','king-hill','rising-lava','target-blitz','color-collapse','push-arena','checkpoint-rush','moving-maze','hook-race','floor-is-lava','dodgeball-arena','reaction-gates','gravity-flip','ice-run','platform-panic','cannon-run','shadow-sprint','zone-capture','speed-climb','one-shot') then raise exception 'unsupported game'; end if;
   p_region := coalesce(nullif(trim(p_region),''),'global');
   perform pg_advisory_xact_lock(hashtext('skill-arcade-free:'||p_game_slug||':'||p_region));
   select m.id into v_match_id from public.matches m
@@ -401,7 +401,7 @@ begin
     order by m.created_at limit 1 for update skip locked;
   if v_match_id is null then
     insert into public.matches(game_slug,region,target_players,status,game_version,entry_amount_atomic,currency)
-      values(p_game_slug,p_region,v_target,'forming','v6.6',0,'FREE') returning id into v_match_id;
+      values(p_game_slug,p_region,v_target,'forming','v6.7',0,'FREE') returning id into v_match_id;
   end if;
   if not exists(select 1 from public.match_players where match_id=v_match_id and user_id=p_user_id) then
     select min(gs) into v_seat from generate_series(1,v_target) gs where not exists(select 1 from public.match_players mp where mp.match_id=v_match_id and mp.seat=gs);
