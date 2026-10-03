@@ -1,6 +1,6 @@
-# Skill Arcade V6.6 — connection checklist
+# Skill Arcade V6.7 — connection checklist
 
-V6.6 is structured so the product can be connected in layers without rewriting the games.
+V6.7 is structured so the product can be connected in layers without rewriting the games.
 
 ## 1. Connect Supabase first
 1. Create a dedicated Supabase project.
@@ -10,7 +10,7 @@ V6.6 is structured so the product can be connected in layers without rewriting t
 3. In Supabase Auth, enable the login methods you want.
 4. Add the deployed site to the Auth Site URL / redirect allow-list.
 5. Put only the public URL/key in `src/online-config.js`.
-6. Put the **service-role key only on the V6.6 server**. Never put it in GitHub Pages or browser JS.
+6. Put the **service-role key only on the V6.7 server**. Never put it in GitHub Pages or browser JS.
 
 At this point real login + free real-user matchmaking can run without crypto.
 
@@ -30,7 +30,7 @@ Then set these in `src/live-config.js`:
 Keep all money gates false while testing accounts and free queues.
 
 ## 3. Connect a wallet provider
-V6.6 supports two wallet paths:
+V6.7 supports two wallet paths:
 - **embedded platform wallet** — created automatically for the user's account on first authenticated wallet access once the provider is enabled; there is no separate Create Wallet step
 - **external EVM wallet** — optional MetaMask/Rabby/Coinbase Wallet/etc connection through the browser
 
@@ -53,7 +53,7 @@ Do not copy a token address from a random website. Verify it from the selected c
 Use `/contracts`.
 
 The flow is:
-1. backend creates/reuses a 12-player on-chain match
+1. backend creates/reuses a 24-player on-chain match
 2. player wallet approves the stablecoin
 3. player calls `joinMatch`
 4. server verifies the `EntryLocked` event
@@ -65,7 +65,7 @@ The flow is:
 Do not deploy the contract to mainnet without independent review/audit.
 
 ## 6. Enable testnet wallet flows
-Only after the previous steps work, change the V6.6 **testnet** gates:
+Only after the previous steps work, change the V6.7 **testnet** gates:
 - wallet provisioning
 - deposits
 - withdrawals
@@ -82,7 +82,7 @@ Test at minimum:
 - failed/reorged transaction handling
 - insufficient balance
 - match never fills → refund
-- 12 users fund same match
+- 24 users fund same match
 - disconnect/reconnect
 - duplicate transaction replay
 - duplicate result settlement
@@ -90,7 +90,7 @@ Test at minimum:
 - withdrawal failure/retry
 
 ## 7. Authoritative game server
-The V6.6 Node server includes authenticated WebSocket rooms and only accepts control inputs, not client-authored positions/results.
+The V6.7 Node server includes authenticated WebSocket rooms and only accepts control inputs, not client-authored positions/results.
 
 Before paid launch, each game still needs its simulation moved to the trusted server so the server controls:
 - movement and physics
