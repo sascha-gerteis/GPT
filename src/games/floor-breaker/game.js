@@ -273,8 +273,8 @@ const $ = (id) => document.getElementById(id);
   const tileGeo = new THREE.BoxGeometry(TILE * .94, TILE_H, TILE * .94);
   const floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .64, metalness: .04, vertexColors: true });
 
-  function money(v) { return `CR ${Math.max(0, v).toFixed(2)}`; }
-  function signedMoney(v) { return `${v >= 0 ? '+' : '−'}CR ${Math.abs(v).toFixed(2)}`; }
+  function money(v) { return `${Math.max(0, v).toFixed(2)} ${TOKEN_SYMBOL}`; }
+  function signedMoney(v) { return `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(2)} ${TOKEN_SYMBOL}`; }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
   function updateEconomyLabels() {
