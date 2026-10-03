@@ -1,24 +1,25 @@
 (()=>{
 'use strict';
+const TOKEN_SYMBOL=String(window.SKILL_ARCADE_LIVE_CONFIG?.chain?.stablecoin?.symbol||'USDC').toUpperCase();
 const $=id=>document.getElementById(id);
 if(!window.THREE){$('startBtn').disabled=true;$('startBtn').textContent='3D ENGINE FAILED TO LOAD';return;}
 const THREE=window.THREE;const MOBILE_RENDER=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0||innerWidth<900;
 const qs=new URLSearchParams(location.search), rawEntry=Number(qs.get('entry'));
 const ENTRY=[1,5,20].includes(rawEntry)?rawEntry:1;
-const STORAGE='skillArcadeDemoAccountV1', PLAYERS=12, FEE=.05;
-const PAYOUTS=[6,3.4,2].map(v=>v*ENTRY), POOL=PLAYERS*ENTRY*(1-FEE), FIXED=1/120;
+const STORAGE='skillArcadeDemoAccountV1', PLAYERS=24, FEE=.05;
+const PAYOUTS=[12,6.8,4].map(v=>v*ENTRY), POOL=PLAYERS*ENTRY*(1-FEE), FIXED=1/120;
 const keys=new Set(), players=[], eliminated=[];
 let state='menu',account=load(),wallet=account.wallet,count=3,elapsed=0,last=performance.now(),acc=0,dashBuffer=0,toastT=0;
 function load(){const f={wallet:25,totalPrizes:0,wins:0,totalMatches:0,matches:[]};try{const d=JSON.parse(localStorage.getItem(STORAGE)||'null');return d?{...f,...d,matches:Array.isArray(d.matches)?d.matches:[]}:f}catch{return f}}
 function save(){account.wallet=Math.max(0,wallet);localStorage.setItem(STORAGE,JSON.stringify(account))}
-function money(v){return `CR ${Math.max(0,+v||0).toFixed(2)}`}
-function signed(v){return `${v>=0?'+':'-'}CR ${Math.abs(v).toFixed(2)}`}
+function money(v){return `${Math.max(0,+v||0).toFixed(2)} ${TOKEN_SYMBOL}`}
+function signed(v){return `${v>=0?'+':'-'}${Math.abs(v).toFixed(2)} ${TOKEN_SYMBOL}`}
 function toast(s){$('toast').textContent=s;$('toast').classList.add('show');toastT=1.05}
 function updateEconomy(){
   $('entryValue').textContent=money(ENTRY);$('poolValue').textContent=money(POOL);
   $('p1').textContent=money(PAYOUTS[0]);$('p2').textContent=money(PAYOUTS[1]);$('p3').textContent=money(PAYOUTS[2]);
   $('walletValue').textContent=$('lobbyWallet').textContent=money(wallet);
-  $('startBtn').textContent=wallet>=ENTRY?`PLAY MATCH - ${money(ENTRY)}`:'NOT ENOUGH BETA CREDITS';$('startBtn').disabled=wallet<ENTRY;
+  $('startBtn').textContent=wallet>=ENTRY?`PLAY MATCH - ${money(ENTRY)}`:'NOT ENOUGH '+TOKEN_SYMBOL;$('startBtn').disabled=wallet<ENTRY;
 }
 const renderer=new THREE.WebGLRenderer({canvas:$('game'),antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,MOBILE_RENDER?1.25:1.6));renderer.shadowMap.enabled=true;
@@ -30,9 +31,9 @@ const world=new THREE.Group(),root=new THREE.Group(),fx=new THREE.Group();scene.
 const mat=(c,r=.65)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
 const floorM=mat(0x6351a6),floor2=mat(0x493d82),coreM=mat(0x2f6f7d),lavaM=new THREE.MeshStandardMaterial({color:0xff4d16,emissive:0xff2100,emissiveIntensity:1.5,roughness:.4});
 function box(w,h,d,x,y,z,m){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=o.receiveShadow=true;world.add(o);return o}
-box(44,.6,44,0,-5,0,lavaM);box(9.2,.55,9.2,0,-.25,0,coreM);
+box(64,.6,64,0,-5,0,lavaM);box(13,.55,13,0,-.25,0,coreM);
 const mid=[],outer=[];
-for(const [arr,half,inner,m] of [[mid,7.2,4.6,floor2],[outer,10,7.2,floorM]]){
+for(const [arr,half,inner,m] of [[mid,10.2,6.5,floor2],[outer,14.2,10.2,floorM]]){
   const w=half-inner;
   arr.push(box(w,.55,half*2,-(inner+w/2),-.25,0,m),box(w,.55,half*2,(inner+w/2),-.25,0,m),box(inner*2,.55,w,0,-.25,-(inner+w/2),m),box(inner*2,.55,w,0,-.25,(inner+w/2),m));
 }
@@ -40,10 +41,10 @@ const colors=[0xffd84e,0xff5f83,0x55d6b0,0x53c8ff,0x9f7cff,0xff8a4f,0x77dd67,0x4
 function model(i){return window.SkillArcadeCharacters?.make(THREE,i,{colors,scale:1.02,markerRadius:.74,labelY:2.14})||new THREE.Group()}
 function reset(){
   root.clear();fx.clear();players.length=0;eliminated.length=0;
-  const pts=Array.from({length:PLAYERS},(_,i)=>{const a=i/PLAYERS*Math.PI*2-.3;return[Math.cos(a)*7.8,Math.sin(a)*7.8]});
+  const pts=Array.from({length:PLAYERS},(_,i)=>{const a=i/PLAYERS*Math.PI*2-.3;return[Math.cos(a)*11.1,Math.sin(a)*11.1]});
   for(let i=0;i<PLAYERS;i++){
     const g=model(i);root.add(g);
-    players.push({id:i,name:names[i],g,pos:new THREE.Vector3(pts[i][0],.05,pts[i][1]),vel:new THREE.Vector3(),alive:true,dashCd:0,dashTime:0,stun:0,facing:new THREE.Vector2(0,-1),lastHit:null,lastHitT:0,kos:0,hitCd:0,bot:i>0,skill:i?[.86,.9,.82,.94,.88,.91,.85,.92,.89,.93,.87][(i-1)%11]:1});
+    players.push({id:i,name:names[i]||window.SkillArcadeProcedural?.playerName(i)||`Player ${i+1}`,g,pos:new THREE.Vector3(pts[i][0],.05,pts[i][1]),vel:new THREE.Vector3(),alive:true,dashCd:0,dashTime:0,stun:0,facing:new THREE.Vector2(0,-1),lastHit:null,lastHitT:0,kos:0,hitCd:0,bot:i>0,skill:i?[.86,.9,.82,.94,.88,.91,.85,.92,.89,.93,.87][(i-1)%11]:1});
   }
 }
 reset();
