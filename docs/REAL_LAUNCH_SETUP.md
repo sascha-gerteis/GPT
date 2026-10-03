@@ -31,8 +31,8 @@ Keep all money gates false while testing accounts and free queues.
 
 ## 3. Connect a wallet provider
 V6.6 supports two wallet paths:
-- **embedded platform wallet** — provider creates a wallet associated with the user's account
-- **external EVM wallet** — user connects MetaMask/Rabby/Coinbase Wallet/etc through the browser
+- **embedded platform wallet** — created automatically for the user's account on first authenticated wallet access once the provider is enabled; there is no separate Create Wallet step
+- **external EVM wallet** — optional MetaMask/Rabby/Coinbase Wallet/etc connection through the browser
 
 For an embedded provider, implement the provider mapping in `server/src/wallet-provider.js` and set the server environment variables. The browser never receives the provider secret.
 
@@ -75,7 +75,7 @@ Keep production/mainnet cash mode false.
 
 Test at minimum:
 - create two separate accounts on two devices
-- create embedded wallet
+- confirm a new account receives its embedded wallet automatically
 - connect external wallet
 - wrong-chain rejection
 - deposit detection / confirmation
