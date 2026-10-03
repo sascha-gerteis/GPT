@@ -158,7 +158,52 @@ button:active{transform:translateY(1px)}
   gap:28px!important;
   margin-bottom:26px!important;
 }
-.page-head{padding:18px 0 8px!important}
+.page-head{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  padding:34px 36px 32px!important;
+  border:1px solid #28303a!important;
+  border-radius:18px!important;
+  background:
+    linear-gradient(115deg,rgba(18,22,28,.98) 0%,rgba(13,16,21,.98) 58%,rgba(15,21,22,.98) 100%)!important;
+  box-shadow:0 20px 60px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.035)!important;
+}
+.page-head:before{
+  content:"";
+  position:absolute;
+  z-index:-2;
+  right:-7%;
+  top:-55%;
+  width:52%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(232,255,90,.12),rgba(232,255,90,.025) 38%,transparent 70%);
+  filter:blur(4px);
+  pointer-events:none;
+}
+.page-head:after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  right:-4%;
+  bottom:-46%;
+  width:48%;
+  height:115%;
+  opacity:.34;
+  transform:perspective(550px) rotateX(62deg) rotateZ(-7deg);
+  transform-origin:center bottom;
+  background-image:
+    linear-gradient(rgba(232,255,90,.17) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(232,255,90,.17) 1px,transparent 1px);
+  background-size:28px 28px;
+  mask-image:linear-gradient(90deg,transparent 0%,#000 24%,#000 100%);
+  pointer-events:none;
+}
+.page-head>div,.page-head>.demo-note{position:relative;z-index:2}
+.page-head>div:first-child{min-width:0;max-width:850px;padding-right:24px}
+.page-head h1{max-width:820px!important;text-wrap:balance}
+.page-head p{max-width:720px!important}
 .eyebrow{
   color:var(--sa-accent)!important;
   font-size:9px!important;
@@ -608,4 +653,126 @@ button:active{transform:translateY(1px)}
   .product-principles div{border-right:0!important;border-bottom:1px solid var(--sa-line-soft)!important}
   .product-principles div:last-child{border-bottom:0!important}
   .card-actions{grid-template-columns:92px 1fr!important}
+}
+
+
+/* V6.7.1 spacing guarantee + interactive 3D game presentation */
+.tab-panel{min-width:0}
+.page-head *,.product-principles *,.game-card *,.wallet-hero *,.profile-row *{box-sizing:border-box}
+.page-head .eyebrow,.page-head h1,.page-head p,.arcade-beta-strip{margin-left:0!important}
+.page-head .arcade-beta-strip{padding:0!important}
+.page-head .demo-note{margin-left:auto!important;align-self:flex-start!important;min-width:max-content!important}
+
+/* 3D cards: pointer-driven tilt from platform-v67.js */
+.game-grid{perspective:1400px!important}
+.game-card{
+  --rx:0deg;
+  --ry:0deg;
+  --lift:0px;
+  --mx:50%;
+  --my:50%;
+  transform-style:preserve-3d!important;
+  transform:perspective(950px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(var(--lift))!important;
+  will-change:transform;
+  overflow:visible!important;
+  box-shadow:0 10px 22px rgba(0,0,0,.16),0 24px 70px rgba(0,0,0,.12)!important;
+}
+.game-card:before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  z-index:5;
+  pointer-events:none;
+  border-radius:inherit;
+  opacity:0;
+  background:radial-gradient(420px circle at var(--mx) var(--my),rgba(232,255,90,.11),transparent 42%);
+  transition:opacity .18s ease;
+}
+.game-card:hover{
+  --lift:-7px;
+  border-color:#59616f!important;
+  box-shadow:0 20px 34px rgba(0,0,0,.28),0 44px 90px rgba(0,0,0,.22)!important;
+}
+.game-card:hover:before{opacity:1}
+.game-card .game-thumb{
+  transform:translateZ(18px)!important;
+  border-radius:9px 9px 0 0!important;
+  overflow:hidden!important;
+  box-shadow:0 16px 30px rgba(0,0,0,.22)!important;
+}
+.game-card .game-thumb img{
+  transform:scale(1.025)!important;
+  transition:transform .24s ease,filter .24s ease!important;
+}
+.game-card:hover .game-thumb img{transform:scale(1.065)!important}
+.game-card .game-body{
+  position:relative;
+  z-index:3;
+  transform:translateZ(12px)!important;
+  background:linear-gradient(180deg,rgba(17,19,25,.98),rgba(13,15,20,.99))!important;
+  border-radius:0 0 9px 9px!important;
+}
+.game-card .thumb-badges{transform:translateZ(24px)}
+.game-card .card-actions{transform:translateZ(8px)}
+.game-card .play-btn{
+  position:relative;
+  overflow:hidden;
+}
+.game-card .play-btn:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  transform:translateX(-120%);
+  background:linear-gradient(100deg,transparent 25%,rgba(255,255,255,.55) 50%,transparent 75%);
+  transition:transform .38s ease;
+}
+.game-card:hover .play-btn:after{transform:translateX(120%)}
+
+/* Better separation between text and hard container edges everywhere. */
+.wallet-hero,.profile-row{padding:28px 30px!important}
+.info-modal,.queue-modal,.lobby-modal{padding:26px!important}
+.support-card,.verification-grid article,.rank-grid article,.control-card,.balance-breakdown article,.wallet-grid article{padding:16px!important}
+
+/* Make the game itself feel deeper without changing mechanics. */
+.game-shell:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at center,transparent 48%,rgba(0,0,0,.18) 100%),
+    linear-gradient(180deg,rgba(255,255,255,.018),transparent 28%,transparent 75%,rgba(0,0,0,.10));
+  mix-blend-mode:normal;
+}
+body[class$="-game"] .hud,
+body[class$="-game"] .top-hud .hud-chip,
+body[class$="-game"] .score-panel,
+body[class$="-game"] .leaderboard{
+  box-shadow:0 14px 34px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.08)!important;
+  transform:translateZ(0);
+}
+body[class$="-game"] canvas{
+  filter:saturate(1.13) contrast(1.035) brightness(1.015)!important;
+}
+
+@media (hover:none),(pointer:coarse){
+  .game-card{
+    --rx:0deg!important;
+    --ry:0deg!important;
+    transform:translateY(var(--lift))!important;
+  }
+  .game-card .game-thumb,.game-card .game-body,.game-card .thumb-badges,.game-card .card-actions{transform:none!important}
+}
+@media(max-width:980px){
+  .page-head{padding:30px 30px 28px!important}
+  .page-head>div:first-child{padding-right:0}
+}
+@media(max-width:680px){
+  .page-head{padding:24px 22px 22px!important;border-radius:15px!important}
+  .page-head:after{right:-30%;width:78%;opacity:.22}
+  .page-head h1{font-size:clamp(38px,11vw,52px)!important;line-height:.98!important}
+  .page-head p{font-size:12px!important}
+  .page-head .demo-note{margin-left:0!important;min-width:0!important;width:100%!important}
+  .arcade-beta-strip{gap:6px!important}
 }
