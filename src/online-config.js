@@ -4,6 +4,6 @@ window.SKILL_ARCADE_ONLINE_CONFIG = Object.freeze({
   supabaseAnonKey: '',
   matchmakingGame: 'obstacle-sprint',
   matchmakingRegion: 'global',
-  targetPlayers: 2,
-  note: 'Real accounts and shared matchmaking only. Real-money entry remains disabled.'
+  targetPlayers: 12,
+  note: 'V6.6 supports real accounts and 12-player shared queues once Supabase is connected. Paid entry remains gated separately.'
 });
