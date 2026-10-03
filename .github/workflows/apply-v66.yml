@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .v66/part_*.b64 > /tmp/v66.b64
+          sha256sum .v66/part_*.b64\n          cat .v66/part_*.b64 > /tmp/v66.b64
           base64 --decode /tmp/v66.b64 > /tmp/v66.zip
           echo "2767c8ad2a7550f7e745f4987871247909a60ea14a8c1710bec2a61125e9c827  /tmp/v66.zip" | sha256sum -c -
           unzip -t /tmp/v66.zip
