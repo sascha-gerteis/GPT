@@ -54,6 +54,7 @@ function ensureUi(){
   decorateGameCard();
 }
 function decorateGameCard(){
+  if(window.SKILL_ARCADE_LIVE_CONFIG)return; // V6.6+ live-core owns all-game matchmaking UI.
   const play=document.querySelector('[data-open-game="obstacle-sprint"]');
   if(!play)return;
   const actions=play.closest('.card-actions');
