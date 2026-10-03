@@ -1,7 +1,8 @@
 (() => {
   'use strict';
 
-  const $ = (id) => document.getElementById(id);
+  const TOKEN_SYMBOL=String(window.SKILL_ARCADE_LIVE_CONFIG?.chain?.stablecoin?.symbol||'USDC').toUpperCase();
+const $ = (id) => document.getElementById(id);
   const canvas = $('game');
   const shell = $('gameShell');
   const overlay = $('overlay');
@@ -72,9 +73,9 @@
   const LOBBY_ENTRY = [1,5,20].includes(requestedEntry) ? requestedEntry : 1;
 
   // Block Crash-inspired setup: one dense floor, twelve players, lava, last alive wins.
-  const PLAYERS = 12;
-  const COLS = 60;
-  const ROWS = 60;
+  const PLAYERS=24;
+  const COLS = 85;
+  const ROWS = 85;
   const TILE = 0.82;
   const TILE_H = 0.30;
   const BOARD_W = COLS * TILE;
@@ -83,10 +84,10 @@
   const FLOOR_TOP = FLOOR_Y + TILE_H * 0.5;
   const LAVA_Y = -5.4;
   const KILL_Y = -4.85;
-  const ROUND_SECONDS = 330;
+  const ROUND_SECONDS = 480;
   const ENTRY_FEE = LOBBY_ENTRY;
   const KO_REWARD = 0; // KOs are a skill stat; all competition money stays inside the displayed top-three prize pool.
-  const PRIZES = [6.00, 3.40, 2.00].map(v => v * ENTRY_FEE);
+  const PRIZES = [12,6.8,4].map(v => v * ENTRY_FEE);
   const DEMO_START_BALANCE = 25.00;
   const STORAGE_KEY = 'skillArcadeDemoAccountV1';
   const GRAVITY = 21.5;
@@ -315,7 +316,7 @@
     const canEnter = wallet + 1e-9 >= ENTRY_FEE;
     if (startBtn) {
       startBtn.disabled = !canEnter;
-      startBtn.textContent = canEnter ? `PLAY MATCH · ${money(ENTRY_FEE)}` : 'NOT ENOUGH BETA CREDITS';
+      startBtn.textContent = canEnter ? `PLAY MATCH · ${money(ENTRY_FEE)}` : 'NOT ENOUGH '+TOKEN_SYMBOL;
     }
     if (playAgainBtn) {
       playAgainBtn.disabled = !canEnter;
@@ -451,7 +452,7 @@
     buildFloor();
     const spawnR=Math.min(BOARD_W,BOARD_D)*.31,spawns=Array.from({length:PLAYERS},(_,i)=>{const a=i/PLAYERS*Math.PI*2-.35;return[Math.cos(a)*spawnR,Math.sin(a)*spawnR]});
     for(let i=0;i<PLAYERS;i++){
-      const p={id:i,name:NAMES[i],color:COLORS[i],x:spawns[i][0],z:spawns[i][1],y:FLOOR_TOP,vx:0,vz:0,vy:0,alive:true,grounded:true,lastGroundedAt:0,rocketJumpCd:0,rocketJumpedThisAir:false,shootCd:rand(.5,1.1),blocks:0,kos:0,earnings:0,survival:0,elimOrder:null,lastDamageBy:null,lastDamageAt:-999,lastForceBy:null,lastForceAt:-999,facingX:0,facingZ:-1,aiThink:rand(.15,.4),aiShoot:rand(1.0,1.8),aiMoveX:0,aiMoveZ:0,aiTargetId:null,lavaWarned:false};
+      const p={id:i,name:NAMES[i]||window.SkillArcadeProcedural?.playerName(i)||`Player ${i+1}`,color:COLORS[i],x:spawns[i][0],z:spawns[i][1],y:FLOOR_TOP,vx:0,vz:0,vy:0,alive:true,grounded:true,lastGroundedAt:0,rocketJumpCd:0,rocketJumpedThisAir:false,shootCd:rand(.5,1.1),blocks:0,kos:0,earnings:0,survival:0,elimOrder:null,lastDamageBy:null,lastDamageAt:-999,lastForceBy:null,lastForceAt:-999,facingX:0,facingZ:-1,aiThink:rand(.15,.4),aiShoot:rand(1.0,1.8),aiMoveX:0,aiMoveZ:0,aiTargetId:null,lavaWarned:false};
       players.push(p);makePlayerMesh(p);
     }
     addFeed('<b>Match ready.</b> Dense block floor loaded.','');
