@@ -1,0 +1,101 @@
+name: Apply V6.6 Real Infrastructure
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/apply-v66.yml"
+      - ".v66/**"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct and verify V6.6 package
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .v66/part_*.b64 > /tmp/v66.b64
+          base64 --decode /tmp/v66.b64 > /tmp/v66.zip
+          echo "2767c8ad2a7550f7e745f4987871247909a60ea14a8c1710bec2a61125e9c827  /tmp/v66.zip" | sha256sum -c -
+          unzip -t /tmp/v66.zip
+          rm -rf /tmp/v66
+          mkdir -p /tmp/v66
+          unzip -q /tmp/v66.zip -d /tmp/v66
+
+      - name: Overlay V6.6 infrastructure
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a /tmp/v66/src/. src/
+          mkdir -p docs server contracts supabase/migrations
+          cp -a /tmp/v66/docs/. docs/
+          cp -a /tmp/v66/server/. server/
+          cp -a /tmp/v66/contracts/. contracts/
+          cp -a /tmp/v66/supabase/. supabase/
+          cp /tmp/v66/README_V66.md README_V66.md
+
+          # Existing V6.5 gameplay + V6.3 account layer must remain.
+          test -f src/games/floor-breaker/game.js
+          test -f src/online.js
+          test -f supabase/migrations/001_accounts_matchmaking.sql
+
+      - name: Wire browser infrastructure
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("src/index.html")
+          s=p.read_text()
+          if 'live-core.css' not in s:
+              s=s.replace('<link rel="stylesheet" href="platform-v65.css">','<link rel="stylesheet" href="platform-v65.css">\n  <link rel="stylesheet" href="live-core.css">')
+          if 'live-config.js' not in s:
+              s=s.replace('<script src="launch-config.js"></script>','<script src="launch-config.js"></script><script src="live-config.js"></script>')
+          if 'live-core.js' not in s:
+              s=s.replace('<script src="shell-v65.js"></script>','<script src="shell-v65.js"></script><script src="live-core.js"></script>')
+          p.write_text(s)
+          PY
+
+      - name: Verify V6.6
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check src/live-core.js
+          node --check src/live-config.js
+          node --check src/online-config.js
+          node --check src/launch-config.js
+          node --check server/src/index.js
+          node --check server/src/config.js
+          node --check server/src/auth.js
+          node --check server/src/supabase.js
+          node --check server/src/wallet-provider.js
+          node --check server/src/chain.js
+          node --check server/src/matchmaker.js
+          python3 src/qa_live_infra.py
+          python3 src/qa_release.py
+          python3 src/qa_mobile.py
+          grep -q "realMoneyEnabled: false" src/launch-config.js
+          grep -q "cashMode: false" src/live-config.js
+          grep -q "paidMatchmaking: false" src/live-config.js
+          grep -q "prepare_paid_match" supabase/migrations/002_live_wallet_escrow_matchmaking.sql
+          grep -q "SkillArcadeEscrow" contracts/contracts/SkillArcadeEscrow.sol
+
+      - name: Commit V6.6
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src docs server contracts supabase README_V66.md
+          if ! git diff --cached --quiet; then
+            git commit -m "Deploy Skill Arcade V6.6 real infrastructure scaffold"
+            git push
+          fi
