@@ -50,9 +50,9 @@ function walletHtml(){
   const locked=summary?.lockedFormatted??'—';
   const pending=summary?.pendingFormatted??'—';
   return `<section class="live-wallet-panel" id="liveWalletPanel">
-    <div class="live-wallet-head"><div><div class="eyebrow">REAL WALLET INFRASTRUCTURE</div><h2>Platform wallet</h2><p>Embedded or external EVM wallet. Private keys are never stored in Skill Arcade's database.</p></div><span class="live-wallet-state ${statusReady()?'ready':''}">${statusLabel()}</span></div>
+    <div class="live-wallet-head"><div><div class="eyebrow">REAL WALLET INFRASTRUCTURE</div><h2>Platform wallet</h2><p>A platform wallet is attached automatically to your account. You can optionally connect an external EVM wallet. Private keys are never stored in Skill Arcade's database.</p></div><span class="live-wallet-state ${statusReady()?'ready':''}">${statusLabel()}</span></div>
     <div class="live-wallet-grid"><article><span>Wallet</span><b id="liveWalletAddress">${esc(shortAddress(addr))}</b></article><article><span>Available</span><b>${esc(bal)} ${esc(chainCfg().stablecoin?.symbol||'USDC')}</b></article><article><span>In matches</span><b>${esc(locked)} ${esc(chainCfg().stablecoin?.symbol||'USDC')}</b></article><article><span>Pending</span><b>${esc(pending)} ${esc(chainCfg().stablecoin?.symbol||'USDC')}</b></article></div>
-    <div class="live-wallet-actions"><button class="primary" id="liveCreateWallet">Create platform wallet</button><button id="liveConnectWallet">Connect external wallet</button><button id="liveDeposit" ${gate('deposits')?'':'disabled'}>Deposit</button><button id="liveWithdraw" ${gate('withdrawals')?'':'disabled'}>Withdraw</button><button id="liveRefresh">Refresh</button></div>
+    <div class="live-wallet-actions"><button id="liveConnectWallet">Connect external wallet</button><button id="liveDeposit" ${gate('deposits')?'':'disabled'}>Deposit</button><button id="liveWithdraw" ${gate('withdrawals')?'':'disabled'}>Withdraw</button><button id="liveRefresh">Refresh</button></div>
     <div class="live-setup-list">
       ${checkRow('Account / Supabase',supabaseConfigured())}
       ${checkRow('Live API / match server',apiConfigured())}
@@ -60,7 +60,7 @@ function walletHtml(){
       ${checkRow(`${chainCfg().networkName||'EVM chain'} + ${chainCfg().stablecoin?.symbol||'stablecoin'}`,chainConfigured())}
       ${checkRow('Escrow + paid matchmaking gate',gate('paidMatchmaking')&&gate('cashMode'))}
     </div>
-    <p id="liveWalletMessage" class="live-note">The code path is ready; funding actions remain locked until the configured provider, chain, escrow contract and launch gates are enabled.</p>
+    <p id="liveWalletMessage" class="live-note">Your account wallet is provisioned automatically once the embedded-wallet provider is enabled. Funding actions remain locked until the provider, chain, escrow contract and launch gates are enabled.</p>
   </section>`;
 }
 function checkRow(name,ok){return `<div><b>${ok?'✓':'·'}</b><span>${esc(name)}</span><em class="${ok?'ok':''}">${ok?'READY':'SETUP'}</em></div>`}
@@ -68,19 +68,12 @@ function mountWallet(){
   const tab=document.querySelector('[data-panel="wallet"]');if(!tab||$('liveWalletPanel'))return;
   tab.classList.add('live-infra-mounted');
   tab.insertAdjacentHTML('afterbegin',walletHtml());
-  $('liveCreateWallet').onclick=provisionEmbedded;
   $('liveConnectWallet').onclick=connectExternal;
   $('liveDeposit').onclick=openDeposit;
   $('liveWithdraw').onclick=openWithdraw;
   $('liveRefresh').onclick=loadSummary;
 }
 function msg(text,kind=''){const n=$('liveWalletMessage');if(!n)return;n.textContent=text;n.className='live-note '+(kind==='error'?'live-error':kind==='success'?'live-success':'')}
-async function provisionEmbedded(){
-  if(!session)await refreshSession();
-  if(!session){document.getElementById('onlineAccountBtn')?.click();return msg('Log in first, then create your platform wallet.','error')}
-  if(!gate('walletProvisioning'))return msg('Wallet provisioning is wired but locked. Configure the embedded-wallet provider and enable the walletProvisioning gate.','error');
-  try{msg('Creating your platform wallet…');const data=await api('/api/wallet/provision',{method:'POST',body:'{}'});wallet=data.wallet||data;msg('Platform wallet ready.','success');renderWalletData()}catch(e){msg(e.message,'error')}
-}
 async function connectExternal(){
   if(!window.ethereum)return msg('No injected EVM wallet was found in this browser.','error');
   try{
@@ -107,7 +100,7 @@ function ensureModals(){
   document.querySelectorAll('[data-live-close]').forEach(b=>b.onclick=()=>$(b.dataset.liveClose)?.classList.add('hidden'));
   $('liveWithdrawSubmit').onclick=submitWithdraw;$('liveJoinMatch').onclick=submitLiveMatch;
 }
-function openDeposit(){ensureModals();if(!wallet?.address)return msg('Create/connect a wallet first.','error');$('liveDepositAddress').textContent=wallet.address;$('liveDepositModal').classList.remove('hidden')}
+function openDeposit(){ensureModals();if(!wallet?.address)return msg('Your account wallet is not ready yet. Refresh once the wallet provider is connected.','error');$('liveDepositAddress').textContent=wallet.address;$('liveDepositModal').classList.remove('hidden')}
 function openWithdraw(){ensureModals();$('liveWithdrawModal').classList.remove('hidden')}
 async function submitWithdraw(){const note=$('liveWithdrawMessage');if(!gate('withdrawals')){note.textContent='Withdrawals are locked by configuration.';return}try{const destination=$('liveWithdrawAddress').value.trim(),amount=+$('liveWithdrawAmount').value;const data=await api('/api/wallet/withdraw',{method:'POST',body:JSON.stringify({destination,amount})});note.textContent=`Withdrawal request ${data.id||'created'}.`}catch(e){note.textContent=e.message;note.classList.add('live-error')}}
 function decorateGames(){
@@ -127,7 +120,7 @@ function renderMatchChecks(){const n=$('liveMatchChecks');if(!n)return;const pai
 async function ensureWalletChain(){if(wallet?.type!=='external'||!window.ethereum)return;const current=parseInt(await window.ethereum.request({method:'eth_chainId'}),16);if(current===Number(chainCfg().chainId))return;await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x'+Number(chainCfg().chainId).toString(16)}]})}
 async function waitWalletReceipt(hash,timeoutMs=120000){if(!window.ethereum)return;const start=Date.now();while(Date.now()-start<timeoutMs){const r=await window.ethereum.request({method:'eth_getTransactionReceipt',params:[hash]});if(r)return r;await new Promise(r=>setTimeout(r,1200))}throw new Error('Transaction confirmation timed out. Check your wallet/explorer before retrying.')}
 async function sendWalletTransaction(tx){if(wallet?.type==='external'){if(!window.ethereum)throw new Error('External wallet is not available.');await ensureWalletChain();const hash=await window.ethereum.request({method:'eth_sendTransaction',params:[tx]});await waitWalletReceipt(hash);return hash}const adapter=window.SkillArcadeEmbeddedWallet;if(adapter?.sendTransaction){const result=await adapter.sendTransaction(tx);return typeof result==='string'?result:result?.hash}throw new Error('Embedded wallet transaction adapter is not connected yet.')}
-async function submitLiveMatch(){const note=$('liveMatchMessage');note.className='live-note';await refreshSession();renderMatchChecks();if(!session){note.textContent='Log in first.';return}if(!apiConfigured()){note.textContent='Deploy/connect the V6.6 API server first.';return}const paid=gate('paidMatchmaking')&&gate('cashMode');try{if(!paid){note.textContent='Joining free real-user queue…';const data=await api('/api/matchmaking/join',{method:'POST',body:JSON.stringify({gameSlug:selectedGame,entryAmount:0,currency:'FREE'})});note.textContent=`Real queue joined · ${data.match_id||data.matchId||'match assigned'} · ${data.players||1}/${data.target_players||12} players.`;note.classList.add('live-success');return}if(!wallet?.address)throw new Error('Create or connect a wallet first.');if(!chainConfigured())throw new Error('Chain, stablecoin and escrow addresses are not configured.');note.textContent='Reserving lobby slot and preparing escrow transactions…';const prep=await api('/api/matchmaking/prepare-paid-entry',{method:'POST',body:JSON.stringify({gameSlug:selectedGame,region:cfg.matchmaking?.region||'global',entryAmount:selectedTier,walletAddress:wallet.address})});let joinHash='';for(const tx of prep.transactions||[]){note.textContent=tx.kind==='approve'?'Approve the match token in your wallet…':'Locking your match entry in escrow…';const h=await sendWalletTransaction(tx);if(tx.kind==='join')joinHash=h}if(!joinHash)throw new Error('Escrow join transaction was not created.');note.textContent='Verifying escrow entry…';const joined=await api('/api/matchmaking/confirm-paid-entry',{method:'POST',body:JSON.stringify({reservationId:prep.reservation_id,matchId:prep.match_id,txHash:joinHash,walletAddress:wallet.address})});note.textContent=`Funded queue joined · ${joined.match_id||prep.match_id} · ${joined.players||1}/${joined.target_players||12} funded players.`;note.classList.add('live-success')}catch(e){note.textContent=e.message;note.classList.add('live-error')}}
+async function submitLiveMatch(){const note=$('liveMatchMessage');note.className='live-note';await refreshSession();renderMatchChecks();if(!session){note.textContent='Log in first.';return}if(!apiConfigured()){note.textContent='Deploy/connect the V6.6 API server first.';return}const paid=gate('paidMatchmaking')&&gate('cashMode');try{if(!paid){note.textContent='Joining free real-user queue…';const data=await api('/api/matchmaking/join',{method:'POST',body:JSON.stringify({gameSlug:selectedGame,entryAmount:0,currency:'FREE'})});note.textContent=`Real queue joined · ${data.match_id||data.matchId||'match assigned'} · ${data.players||1}/${data.target_players||12} players.`;note.classList.add('live-success');return}if(!wallet?.address)throw new Error('Your account wallet is not ready yet.');if(!chainConfigured())throw new Error('Chain, stablecoin and escrow addresses are not configured.');note.textContent='Reserving lobby slot and preparing escrow transactions…';const prep=await api('/api/matchmaking/prepare-paid-entry',{method:'POST',body:JSON.stringify({gameSlug:selectedGame,region:cfg.matchmaking?.region||'global',entryAmount:selectedTier,walletAddress:wallet.address})});let joinHash='';for(const tx of prep.transactions||[]){note.textContent=tx.kind==='approve'?'Approve the match token in your wallet…':'Locking your match entry in escrow…';const h=await sendWalletTransaction(tx);if(tx.kind==='join')joinHash=h}if(!joinHash)throw new Error('Escrow join transaction was not created.');note.textContent='Verifying escrow entry…';const joined=await api('/api/matchmaking/confirm-paid-entry',{method:'POST',body:JSON.stringify({reservationId:prep.reservation_id,matchId:prep.match_id,txHash:joinHash,walletAddress:wallet.address})});note.textContent=`Funded queue joined · ${joined.match_id||prep.match_id} · ${joined.players||1}/${joined.target_players||12} funded players.`;note.classList.add('live-success')}catch(e){note.textContent=e.message;note.classList.add('live-error')}}
 async function loadPublicConfig(){if(!apiConfigured())return;try{const r=await fetch(String(cfg.apiBaseUrl).replace(/\/$/,'')+'/api/config');if(r.ok)remoteConfig=await r.json()}catch{}}
 async function boot(){
   await loadPublicConfig();
@@ -137,6 +130,6 @@ async function boot(){
   if(session&&apiConfigured())await loadSummary().catch(()=>{});
   const obs=new MutationObserver(()=>decorateGames());obs.observe(document.documentElement,{subtree:true,childList:true});
 }
-window.SkillArcadeLive={openWallet:()=>document.querySelector('[data-tab="wallet"]')?.click(),connectExternal,provisionEmbedded,loadSummary};
+window.SkillArcadeLive={openWallet:()=>document.querySelector('[data-tab="wallet"]')?.click(),connectExternal,loadSummary};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
