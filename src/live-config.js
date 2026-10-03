@@ -1,5 +1,5 @@
 window.SKILL_ARCADE_LIVE_CONFIG = Object.freeze({
-  build: 'V6.6-real-infra-ready',
+  build: 'V6.7-24-player-procedural',
   environment: 'setup', // setup | testnet | production
 
   // Backend services. Fill these after deploying /server.
@@ -35,7 +35,7 @@ window.SKILL_ARCADE_LIVE_CONFIG = Object.freeze({
   },
 
   matchmaking: {
-    targetPlayers: 12,
+    targetPlayers: 24,
     region: 'global',
     entryTiers: [1, 5, 20]
   },
