@@ -1,6 +1,7 @@
 (() => {
   'use strict';
-  const $ = id => document.getElementById(id);
+  const TOKEN_SYMBOL=String(window.SKILL_ARCADE_LIVE_CONFIG?.chain?.stablecoin?.symbol||'USDC').toUpperCase();
+const $ = id => document.getElementById(id);
   const canvas=$('game'), overlay=$('overlay'), menuPanel=$('menuPanel'), resultPanel=$('resultPanel');
   const startBtn=$('startBtn'), playAgainBtn=$('playAgainBtn'), leaveBtn=$('leaveBtn');
   const walletValue=$('walletValue'), lobbyWallet=$('lobbyWallet'), positionValue=$('positionValue'), timeValue=$('timeValue'), checkpointValue=$('checkpointValue');
@@ -13,8 +14,8 @@
   const THREE=window.THREE;const MOBILE_RENDER=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0||innerWidth<900;
   const qs=new URLSearchParams(location.search); const req=Number(qs.get('entry')); const ENTRY=[1,5,20].includes(req)?req:1;
   const STORAGE_KEY='skillArcadeDemoAccountV1', MAP_KEY='skillArcadeLastSprintMapV1';
-  const DEMO_BALANCE=25, PLAYERS=12, ROUND=150, FEE_RATE=.05, PAYOUT_RATIOS=[6,3.4,2], PAYOUTS=PAYOUT_RATIOS.map(v=>v*ENTRY), PRIZE_POOL=PLAYERS*ENTRY*(1-FEE_RATE);
-  const COURSE_W=16, FINISH_Z=165.12, GRAVITY=23, MAX_SPEED=6.55, GROUND_ACCEL=24, GROUND_BRAKE=32, AIR_ACCEL=10.5, JUMP_V=7.35, PLAYER_R=.36, FIXED=1/120;
+  const DEMO_BALANCE=25, PLAYERS=24, ROUND=240, FEE_RATE=.05, PAYOUT_RATIOS=[12,6.8,4], PAYOUTS=PAYOUT_RATIOS.map(v=>v*ENTRY), PRIZE_POOL=PLAYERS*ENTRY*(1-FEE_RATE);
+  const COURSE_W=22, FINISH_Z=230, GRAVITY=23, MAX_SPEED=6.55, GROUND_ACCEL=24, GROUND_BRAKE=32, AIR_ACCEL=10.5, JUMP_V=7.35, PLAYER_R=.36, FIXED=1/120;
   const names=['You','Nova','Mika','Rook','Volt','Pip','Zed','Kira','Atlas','Echo','Juno','Blaze'];
   const colors=[0xffd84e,0xff5f83,0x55d6b0,0x53c8ff,0x9f7cff,0xff8a4f,0x77dd67,0x42d1d6,0xffb347,0xe66cff,0x6f8cff,0xff6b57];
   const keys=new Set(), players=[], finishOrder=[];
@@ -22,14 +23,14 @@
   let selectedMapIndex=0, selectedMap=null;
   const groundRects=[], obstacles=[];
 
-  function money(v){return `CR ${Math.max(0,+v||0).toFixed(2)}`}
+  function money(v){return `${Math.max(0,+v||0).toFixed(2)} ${TOKEN_SYMBOL}`}
   function signed(v){v=+v||0;return `${v>=0?'+':'−'}CR ${Math.abs(v).toFixed(2)}`}
   function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
   function moveToward(v,t,d){return v<t?Math.min(v+d,t):v>t?Math.max(v-d,t):t}
   function loadAccount(){const f={wallet:DEMO_BALANCE,totalPrizes:0,wins:0,totalMatches:0,matches:[]};try{const r=localStorage.getItem(STORAGE_KEY);if(!r)return f;const d=JSON.parse(r);return{wallet:Number.isFinite(+d.wallet)?Math.max(0,+d.wallet):DEMO_BALANCE,totalPrizes:Number.isFinite(+d.totalPrizes)?Math.max(0,+d.totalPrizes):0,wins:Number.isFinite(+d.wins)?Math.max(0,+d.wins):0,totalMatches:Number.isFinite(+d.totalMatches)?Math.max(0,+d.totalMatches):0,matches:Array.isArray(d.matches)?d.matches:[]}}catch{return f}}
   function save(){account.wallet=Math.max(0,wallet);localStorage.setItem(STORAGE_KEY,JSON.stringify(account))}
   function record(place,prize,finishTime,forfeit=false){if(activeRecorded)return;activeRecorded=true;const net=(prize||0)-ENTRY;if(!forfeit){account.totalPrizes=(account.totalPrizes||0)+(prize||0);if(place===1)account.wins=(account.wins||0)+1}account.totalMatches=(account.totalMatches||0)+1;account.matches=account.matches||[];account.matches.unshift({game:'obstacle-sprint',gameName:'Obstacle Sprint',mapName:selectedMap?.name||'',place:forfeit?null:place,prize:+prize||0,net,forfeit:!!forfeit,finishTime:finishTime||null,lobby:ENTRY,detail:`${selectedMap?.name||'Course'}${finishTime?` · ${Number(finishTime).toFixed(2)}s`:''}`,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});account.matches=account.matches.slice(0,50);save()}
-  function updateEconomy(){entryValue.textContent=money(ENTRY);poolValue.textContent=money(PRIZE_POOL);p1.textContent=money(PAYOUTS[0]);p2.textContent=money(PAYOUTS[1]);p3.textContent=money(PAYOUTS[2]);lobbyWallet.textContent=money(wallet);walletValue.textContent=money(wallet);startBtn.textContent=wallet>=ENTRY?`PLAY MATCH · ${money(ENTRY)}`:'NOT ENOUGH BETA CREDITS';startBtn.disabled=wallet<ENTRY;entryMessage.textContent=wallet>=ENTRY?'Beta credits are used when the skill match starts.':'Return to the arcade and reset the demo wallet.'}
+  function updateEconomy(){entryValue.textContent=money(ENTRY);poolValue.textContent=money(PRIZE_POOL);p1.textContent=money(PAYOUTS[0]);p2.textContent=money(PAYOUTS[1]);p3.textContent=money(PAYOUTS[2]);lobbyWallet.textContent=money(wallet);walletValue.textContent=money(wallet);startBtn.textContent=wallet>=ENTRY?`PLAY MATCH · ${money(ENTRY)}`:'NOT ENOUGH '+TOKEN_SYMBOL;startBtn.disabled=wallet<ENTRY;entryMessage.textContent=wallet>=ENTRY?'Stablecoin are used when the skill match starts.':'Return to the arcade and reset the demo wallet.'}
 
   const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,MOBILE_RENDER?1.25:1.6));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;if('outputColorSpace'in renderer)renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
   const scene=new THREE.Scene();scene.background=new THREE.Color(0x74cffa);scene.fog=new THREE.Fog(0x74cffa,58,170);
@@ -57,14 +58,14 @@
     {name:'Final Frenzy',sky:0xd7b9ff,fog:0xd7b9ff,platforms:[{x:0,z:64,w:12,d:138,mat:'dark'}],rails:[{z:64,d:138}],sweepers:[[15,2.4,.2,'orange'],[26,-2.55,1.2,'pink'],[44,2.65,.8,'cyan'],[62,-2.75,2.0,'yellow'],[81,2.8,.4,'green'],[99,-2.9,1.6,'pink'],[121,3.0,.9,'cyan']],gates:[[34,2.45,1.2,.4,'green'],[72,2.3,1.35,1.9,'orange'],[110,2.2,1.5,2.6,'yellow']],pushers:[[52,.3,'pink',1.55,4.2],[90,2.1,'cyan',1.6,4.2]],jumpZones:[],checkpoints:[[-3,0],[30,0],[60,0],[90,0],[112,0]],path:[[-3,0],[28,-2],[48,2],[68,-2],[88,2],[108,-2],[129,0]]}
   ];
 
-  function scaledMap(m){const sx=1.22,sz=1.28;return{...m,platforms:m.platforms.map(p=>({...p,x:p.x*sx,z:p.z*sz,w:p.w*sx,d:p.d*sz})),rails:m.rails.map(r=>({...r,z:r.z*sz,d:r.d*sz})),sweepers:m.sweepers.map(a=>{const q=[a[0]*sz,a[1],a[2],a[3]];if(a.length>4)q[4]=a[4]*sx;return q}),gates:m.gates.map(a=>[a[0]*sz,a[1]*sx,a[2],a[3],a[4]]),pushers:m.pushers.map(a=>{const q=[a[0]*sz,a[1],a[2]];if(a.length>3)q[3]=a[3];if(a.length>4)q[4]=a[4]*sx;return q}),jumpZones:m.jumpZones.map(a=>[a[0]*sz,a[1]*sz]),checkpoints:m.checkpoints.map(a=>[a[0]*sz,a[1]*sx]),path:m.path.map(a=>[a[0]*sz,a[1]*sx])}}
-  function chooseNewMap(){let lastIndex=Number(localStorage.getItem(MAP_KEY));if(!Number.isInteger(lastIndex)||lastIndex<0||lastIndex>=MAPS.length)lastIndex=-1;let choices=MAPS.map((_,i)=>i).filter(i=>i!==lastIndex);selectedMapIndex=choices[Math.floor(Math.random()*choices.length)];selectedMap=scaledMap(MAPS[selectedMapIndex]);localStorage.setItem(MAP_KEY,String(selectedMapIndex));mapNameEls.forEach(e=>e.textContent=selectedMap.name)}
+  function scaledMap(m){const sx=1.65,sz=1.75;return{...m,platforms:m.platforms.map(p=>({...p,x:p.x*sx,z:p.z*sz,w:p.w*sx,d:p.d*sz})),rails:m.rails.map(r=>({...r,z:r.z*sz,d:r.d*sz})),sweepers:m.sweepers.map(a=>{const q=[a[0]*sz,a[1],a[2],a[3]];if(a.length>4)q[4]=a[4]*sx;return q}),gates:m.gates.map(a=>[a[0]*sz,a[1]*sx,a[2],a[3],a[4]]),pushers:m.pushers.map(a=>{const q=[a[0]*sz,a[1],a[2]];if(a.length>3)q[3]=a[3];if(a.length>4)q[4]=a[4]*sx;return q}),jumpZones:m.jumpZones.map(a=>[a[0]*sz,a[1]*sz]),checkpoints:m.checkpoints.map(a=>[a[0]*sz,a[1]*sx]),path:m.path.map(a=>[a[0]*sz,a[1]*sx])}}
+  function chooseNewMap(){let lastIndex=Number(localStorage.getItem(MAP_KEY));if(!Number.isInteger(lastIndex)||lastIndex<0||lastIndex>=MAPS.length)lastIndex=-1;let choices=MAPS.map((_,i)=>i).filter(i=>i!==lastIndex);selectedMapIndex=choices[Math.floor(Math.random()*choices.length)];selectedMap=scaledMap({...MAPS[selectedMapIndex],seed:window.SkillArcadeProcedural?.nextSeed('obstacle-sprint')||Date.now()});localStorage.setItem(MAP_KEY,String(selectedMapIndex));mapNameEls.forEach(e=>e.textContent=selectedMap.name)}
   function buildMap(){world.clear();groundRects.length=0;obstacles.length=0;scene.background=new THREE.Color(selectedMap.sky);scene.fog.color.setHex(selectedMap.fog);for(const p of selectedMap.platforms)platform(p.x,p.z,p.w,p.d,p.mat);for(const r of selectedMap.rails)rail(r.z,r.d);for(const s of selectedMap.sweepers)addSweeper(...s);for(const g of selectedMap.gates)addGate(...g);for(const p of selectedMap.pushers)addPusher(...p);finishArch();for(const [x,y,z,s] of [[-16,8,18,4],[18,10,48,5],[-19,9,78,4],[20,12,110,5]]){const c=new THREE.Mesh(new THREE.SphereGeometry(s,16,10),new THREE.MeshStandardMaterial({color:0xf4fbff,roughness:1}));c.position.set(x,y,z);world.add(c)}}
   chooseNewMap();buildMap();
 
   function makeRunnerModel(i){return window.SkillArcadeCharacters?.make(THREE,i,{colors,scale:1.02,markerRadius:.72,labelY:2.12})||new THREE.Group()}
   function startPoint(i){const lane=-5.7+(i%4)*3.8,row=Math.floor(i/4);return new THREE.Vector3(lane,.05,-4-row*1.55)}
-  function createPlayer(i){const group=makeRunnerModel(i);playerRoot.add(group);const sp=startPoint(i);return{id:i,name:names[i],group,pos:sp.clone(),vel:new THREE.Vector3(),grounded:true,coyote:.12,checkpoint:sp.clone(),checkpointIndex:1,finished:false,finishTime:null,respawn:0,hitCooldown:0,bot:i>0,skill:i===0?1:[.88,.91,.84,.95,.86,.9,.89,.93,.87,.92,.9][(i-1)%11],laneBias:[0,-2.6,2.7,-1.3,1.5,-3.7,3.8,.4,-2,2,0,-.7][i%12],animPhase:i*.7}}
+  function createPlayer(i){const group=makeRunnerModel(i);playerRoot.add(group);const sp=startPoint(i);return{id:i,name:names[i]||window.SkillArcadeProcedural?.playerName(i)||`Player ${i+1}`,group,pos:sp.clone(),vel:new THREE.Vector3(),grounded:true,coyote:.12,checkpoint:sp.clone(),checkpointIndex:1,finished:false,finishTime:null,respawn:0,hitCooldown:0,bot:i>0,skill:i===0?1:[.88,.91,.84,.95,.86,.9,.89,.93,.87,.92,.9][(i-1)%11],laneBias:[0,-2.6,2.7,-1.3,1.5,-3.7,3.8,.4,-2,2,0,-.7][i%12],animPhase:i*.7}}
   function resetPlayers(){playerRoot.clear();players.length=0;finishOrder.length=0;for(let i=0;i<PLAYERS;i++)players.push(createPlayer(i));userFinished=false;finishBanner.classList.add('hidden')}
   resetPlayers();
   function groundAt(pos){for(const r of groundRects){if(Math.abs(pos.x-r.x)<=r.w/2+.06&&Math.abs(pos.z-r.z)<=r.d/2+.06)return 0}return null}
