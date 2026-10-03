@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#101827"><title>Party Arena · Skill Arcade</title>
+<link rel="stylesheet" href="../shared-mini.css"><link rel="stylesheet" href="../arcade-polish.css">
+<style>
+html,body,.party-shell{margin:0;width:100%;height:100%;overflow:hidden;background:#101827}.party-shell{position:relative;touch-action:none}
+#game{width:100%;height:100%;display:block;background:#152238}
+.party-hud{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+.party-hud>div{background:rgba(6,15,29,.78);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 11px;color:#fff;backdrop-filter:blur(8px)}
+.party-hud span{display:block;font:700 9px/1.2 system-ui;opacity:.66;letter-spacing:.08em}.party-hud b{font:900 16px/1.25 system-ui}
+.party-center{text-align:center}.party-overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(3,8,15,.55);padding:18px}
+.party-card{width:min(520px,94vw);background:#132238;border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:22px;color:#fff;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.party-card h1{margin:7px 0 6px;font:900 clamp(28px,7vw,46px)/.95 system-ui}.party-card p{color:#b9c7d8;line-height:1.5}.party-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}.party-facts div{background:rgba(255,255,255,.05);padding:10px;border-radius:10px}.party-facts b,.party-facts span{display:block}.party-facts span{font-size:9px;opacity:.65;text-transform:uppercase}.party-facts b{margin-top:3px}
+.party-actions{display:flex;gap:8px}.party-actions button,.party-actions a{flex:1;min-height:46px;border:0;border-radius:11px;font-weight:900;text-align:center;text-decoration:none;display:grid;place-items:center}.party-actions button{background:#65e0bd;color:#071923}.party-actions a{background:rgba(255,255,255,.08);color:#fff}
+.party-note{margin-top:10px;font-size:10px;color:#8fa3bb}.hidden{display:none!important}
+.party-mobile{position:absolute;left:16px;right:16px;bottom:18px;display:flex;justify-content:space-between;align-items:end;pointer-events:none}
+.party-stick,.party-action{pointer-events:auto;touch-action:none}.party-stick{width:116px;height:116px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(5,14,26,.38);position:relative}.party-stick i{position:absolute;left:50%;top:50%;width:42px;height:42px;transform:translate(-50%,-50%);border-radius:50%;background:rgba(255,255,255,.7)}
+.party-action{width:78px;height:78px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(101,224,189,.82);font-weight:900;color:#062019}
+@media(pointer:fine){.party-mobile{display:none}}
+</style>
+</head>
+<body><main class="party-shell">
+<canvas id="game"></canvas>
+<div class="party-hud"><div><span>MODE</span><b id="hudMode">--</b></div><div class="party-center"><span>STATUS</span><b id="hudStatus">--</b></div><div><span>YOU</span><b id="hudYou">--</b></div></div>
+<div id="overlay" class="party-overlay"><section class="party-card"><small id="gameNo">NEW GAME</small><h1 id="title">PARTY MODE</h1><p id="rule"></p><div class="party-facts"><div><span>Players</span><b>24</b></div><div><span>Map</span><b>Procedural</b></div><div><span>Round</span><b id="roundFact">3–6 min</b></div></div><div class="party-actions"><button id="startBtn">PLAY</button><a href="../../index.html">ARCADE</a></div><div class="party-note">WASD / left stick to move · SPACE / action button for mode action</div></section></div>
+<div id="result" class="party-overlay hidden"><section class="party-card"><small>MATCH COMPLETE</small><h1 id="resultTitle">FINISHED</h1><p id="resultText"></p><div class="party-actions"><button id="againBtn">PLAY AGAIN</button><a href="../../index.html">ARCADE</a></div></section></div>
+<div class="party-mobile"><div id="stick" class="party-stick"><i id="knob"></i></div><button id="action" class="party-action">ACTION</button></div>
+</main>
+<script src="../../live-config.js"></script><script src="../procedural.js"></script><script src="game.js"></script>
+</body></html>
