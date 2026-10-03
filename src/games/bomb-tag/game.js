@@ -1,21 +1,22 @@
 (()=>{
 'use strict';
+const TOKEN_SYMBOL=String(window.SKILL_ARCADE_LIVE_CONFIG?.chain?.stablecoin?.symbol||'USDC').toUpperCase();
 const $=id=>document.getElementById(id);
 if(!window.THREE){$('startBtn').disabled=true;$('startBtn').textContent='3D ENGINE FAILED TO LOAD';return;}
 const THREE=window.THREE;const MOBILE_RENDER=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0||innerWidth<900;
 const qs=new URLSearchParams(location.search), rawEntry=Number(qs.get('entry'));
 const ENTRY=[1,5,20].includes(rawEntry)?rawEntry:1;
-const STORAGE='skillArcadeDemoAccountV1',PLAYERS=12,FEE=.05,PAYOUTS=[6,3.4,2].map(v=>v*ENTRY),POOL=PLAYERS*ENTRY*(1-FEE),FIXED=1/120;
+const STORAGE='skillArcadeDemoAccountV1',PLAYERS=24,FEE=.05,PAYOUTS=[12,6.8,4].map(v=>v*ENTRY),POOL=PLAYERS*ENTRY*(1-FEE),FIXED=1/120;
 const keys=new Set(),players=[],eliminated=[];
 let state='menu',account=load(),wallet=account.wallet,count=3,elapsed=0,last=performance.now(),acc=0,dashBuffer=0,toastT=0,bombHolder=null,bombFuse=0,passCooldown=0,nextBombDelay=0,explosions=0;
 function load(){const f={wallet:25,totalPrizes:0,wins:0,totalMatches:0,matches:[]};try{const d=JSON.parse(localStorage.getItem(STORAGE)||'null');return d?{...f,...d,matches:Array.isArray(d.matches)?d.matches:[]}:f}catch{return f}}
 function save(){account.wallet=Math.max(0,wallet);localStorage.setItem(STORAGE,JSON.stringify(account))}
-function money(v){return `CR ${Math.max(0,+v||0).toFixed(2)}`}
-function signed(v){return `${v>=0?'+':'-'}CR ${Math.abs(v).toFixed(2)}`}
+function money(v){return `${Math.max(0,+v||0).toFixed(2)} ${TOKEN_SYMBOL}`}
+function signed(v){return `${v>=0?'+':'-'}${Math.abs(v).toFixed(2)} ${TOKEN_SYMBOL}`}
 function toast(s){$('toast').textContent=s;$('toast').classList.add('show');toastT=1.0}
 function updateEconomy(){
   $('entryValue').textContent=money(ENTRY);$('poolValue').textContent=money(POOL);$('p1').textContent=money(PAYOUTS[0]);$('p2').textContent=money(PAYOUTS[1]);$('p3').textContent=money(PAYOUTS[2]);
-  $('walletValue').textContent=$('lobbyWallet').textContent=money(wallet);$('startBtn').textContent=wallet>=ENTRY?`PLAY MATCH - ${money(ENTRY)}`:'NOT ENOUGH BETA CREDITS';$('startBtn').disabled=wallet<ENTRY;
+  $('walletValue').textContent=$('lobbyWallet').textContent=money(wallet);$('startBtn').textContent=wallet>=ENTRY?`PLAY MATCH - ${money(ENTRY)}`:'NOT ENOUGH '+TOKEN_SYMBOL;$('startBtn').disabled=wallet<ENTRY;
 }
 const renderer=new THREE.WebGLRenderer({canvas:$('game'),antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,MOBILE_RENDER?1.25:1.6));renderer.shadowMap.enabled=true;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x1a1024);scene.fog=new THREE.Fog(0x1a1024,28,75);
@@ -23,17 +24,17 @@ const camera=new THREE.PerspectiveCamera(55,1,.05,100);camera.position.set(0,18.
 scene.add(new THREE.HemisphereLight(0xd9d2ff,0x2a1537,1.75));const sun=new THREE.DirectionalLight(0xffffff,1.8);sun.position.set(-12,22,-8);sun.castShadow=true;scene.add(sun);
 const world=new THREE.Group(),root=new THREE.Group(),fx=new THREE.Group();scene.add(world,root,fx);
 const mat=(c,r=.62)=>new THREE.MeshStandardMaterial({color:c,roughness:r});
-const floor=new THREE.Mesh(new THREE.CylinderGeometry(11.7,11.7,.55,64),mat(0x564483,.65));floor.position.y=-.28;floor.receiveShadow=true;world.add(floor);
-const inner=new THREE.Mesh(new THREE.CylinderGeometry(10.55,10.55,.09,64),mat(0x6f5da0,.72));inner.position.y=.035;inner.receiveShadow=true;world.add(inner);
-const border=new THREE.Mesh(new THREE.TorusGeometry(11.05,.13,8,64),new THREE.MeshStandardMaterial({color:0xa98de1,emissive:0x39245d,emissiveIntensity:.8,roughness:.35}));border.rotation.x=Math.PI/2;border.position.y=.16;world.add(border);
-const lava=new THREE.Mesh(new THREE.CylinderGeometry(17,17,.45,64),new THREE.MeshStandardMaterial({color:0xff4a18,emissive:0xff2400,emissiveIntensity:1.7,roughness:.45}));lava.position.y=-4.4;world.add(lava);
+const floor=new THREE.Mesh(new THREE.CylinderGeometry(16.6,16.6,.55,64),mat(0x564483,.65));floor.position.y=-.28;floor.receiveShadow=true;world.add(floor);
+const inner=new THREE.Mesh(new THREE.CylinderGeometry(15.0,15.0,.09,64),mat(0x6f5da0,.72));inner.position.y=.035;inner.receiveShadow=true;world.add(inner);
+const border=new THREE.Mesh(new THREE.TorusGeometry(15.7,.13,8,64),new THREE.MeshStandardMaterial({color:0xa98de1,emissive:0x39245d,emissiveIntensity:.8,roughness:.35}));border.rotation.x=Math.PI/2;border.position.y=.16;world.add(border);
+const lava=new THREE.Mesh(new THREE.CylinderGeometry(24,24,.45,64),new THREE.MeshStandardMaterial({color:0xff4a18,emissive:0xff2400,emissiveIntensity:1.7,roughness:.45}));lava.position.y=-4.4;world.add(lava);
 const colors=[0xffd84e,0xff5f83,0x55d6b0,0x53c8ff,0x9f7cff,0xff8a4f,0x77dd67,0x42d1d6,0xffb347,0xe66cff,0x6f8cff,0xff6b57],names=['You','Nova','Mika','Rook','Volt','Pip','Zed','Kira','Atlas','Echo','Juno','Blaze'];
 function makePlayer(i){return window.SkillArcadeCharacters?.make(THREE,i,{colors,scale:1.02,markerRadius:.74,labelY:2.14})||new THREE.Group()}
 const bombGroup=new THREE.Group();const bombCore=new THREE.Mesh(new THREE.SphereGeometry(.27,18,14),new THREE.MeshStandardMaterial({color:0x1a1a21,roughness:.45}));const fuse=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.34,8),new THREE.MeshStandardMaterial({color:0x8b755c,roughness:.8}));fuse.position.set(.12,.34,0);fuse.rotation.z=-.5;const spark=new THREE.Mesh(new THREE.SphereGeometry(.1,10,8),new THREE.MeshBasicMaterial({color:0xff5a45}));spark.position.set(.21,.48,0);bombGroup.add(bombCore,fuse,spark);scene.add(bombGroup);bombGroup.visible=false;
 function reset(){
   root.clear();fx.clear();players.length=0;eliminated.length=0;explosions=0;bombHolder=null;bombFuse=0;passCooldown=0;nextBombDelay=0;
-  const pts=Array.from({length:PLAYERS},(_,i)=>{const a=i/PLAYERS*Math.PI*2-.25;return[Math.cos(a)*7.8,Math.sin(a)*7.8]});
-  for(let i=0;i<PLAYERS;i++){const g=makePlayer(i);root.add(g);players.push({id:i,name:names[i],g,pos:new THREE.Vector3(pts[i][0],.05,pts[i][1]),vel:new THREE.Vector3(),alive:true,bot:i>0,facing:new THREE.Vector2(0,-1),dashCd:0,dashTime:0,passes:0,bombTime:0,skill:i?[.88,.92,.85,.94,.9,.87,.91,.89,.93,.86,.9][(i-1)%11]:1})}
+  const pts=Array.from({length:PLAYERS},(_,i)=>{const a=i/PLAYERS*Math.PI*2-.25;return[Math.cos(a)*11.1,Math.sin(a)*11.1]});
+  for(let i=0;i<PLAYERS;i++){const g=makePlayer(i);root.add(g);players.push({id:i,name:names[i]||window.SkillArcadeProcedural?.playerName(i)||`Player ${i+1}`,g,pos:new THREE.Vector3(pts[i][0],.05,pts[i][1]),vel:new THREE.Vector3(),alive:true,bot:i>0,facing:new THREE.Vector2(0,-1),dashCd:0,dashTime:0,passes:0,bombTime:0,skill:i?[.88,.92,.85,.94,.9,.87,.91,.89,.93,.86,.9][(i-1)%11]:1})}
 }
 reset();
 function alive(){return players.filter(p=>p.alive)}
