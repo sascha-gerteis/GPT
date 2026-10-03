@@ -1,1 +1,1 @@
-6.5-mobile-arcade-beta
+6.6-real-infra-ready
