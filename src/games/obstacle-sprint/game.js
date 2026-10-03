@@ -24,7 +24,7 @@ const $ = id => document.getElementById(id);
   const groundRects=[], obstacles=[];
 
   function money(v){return `${Math.max(0,+v||0).toFixed(2)} ${TOKEN_SYMBOL}`}
-  function signed(v){v=+v||0;return `${v>=0?'+':'−'}CR ${Math.abs(v).toFixed(2)}`}
+  function signed(v){v=+v||0;return `${v>=0?'+':'−'}${Math.abs(v).toFixed(2)} ${TOKEN_SYMBOL}`}
   function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
   function moveToward(v,t,d){return v<t?Math.min(v+d,t):v>t?Math.max(v-d,t):t}
   function loadAccount(){const f={wallet:DEMO_BALANCE,totalPrizes:0,wins:0,totalMatches:0,matches:[]};try{const r=localStorage.getItem(STORAGE_KEY);if(!r)return f;const d=JSON.parse(r);return{wallet:Number.isFinite(+d.wallet)?Math.max(0,+d.wallet):DEMO_BALANCE,totalPrizes:Number.isFinite(+d.totalPrizes)?Math.max(0,+d.totalPrizes):0,wins:Number.isFinite(+d.wins)?Math.max(0,+d.wins):0,totalMatches:Number.isFinite(+d.totalMatches)?Math.max(0,+d.totalMatches):0,matches:Array.isArray(d.matches)?d.matches:[]}}catch{return f}}
