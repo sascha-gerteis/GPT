@@ -22,8 +22,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sha256sum .v66/part_*.b64
-          cat .v66/part_*.b64 > /tmp/v66.b64
+          echo "6aa7098bab9553b3f711883dea96b02c1121b3a1fd1bdb8b182b36e507f9c138  .v66/part_00.b64" | sha256sum -c -
+          echo "63b209e77677e4faca8f76e83a8e58b719659660330f967e3cf13524d1bfccca  .v66/part_01.b64" | sha256sum -c -
+          echo "9deb74a9fae338433fbb033157ad84bd0925b9e28e32e7786b346c1bf567039c  .v66/part_02.b64" | sha256sum -c -
+          echo "6ba3d0a467c6159ff0cec1b6162f20a1e5466fb7acf58f1dec59fc8f0fcd5ed1  .v66/part_03a.b64" | sha256sum -c -
+          echo "ef07ef0af797665545e18d30b57c0b831fd3665e12825e4e5e94458b419a7c95  .v66/part_03b.b64" | sha256sum -c -
+          echo "25b073da6f12b6c9e0378d294db1dce6211c30ac743fb007af2acde9b3810839  .v66/part_04.b64" | sha256sum -c -
+          echo "c97931cda843af688d164bf4c81d8e6827d19b4aae7179d1b521ffe86411d6f0  .v66/part_05.b64" | sha256sum -c -
+          cat .v66/part_00.b64 .v66/part_01.b64 .v66/part_02.b64 .v66/part_03a.b64 .v66/part_03b.b64 .v66/part_04.b64 .v66/part_05.b64 > /tmp/v66.b64
           base64 --decode /tmp/v66.b64 > /tmp/v66.zip
           echo "2767c8ad2a7550f7e745f4987871247909a60ea14a8c1710bec2a61125e9c827  /tmp/v66.zip" | sha256sum -c -
           unzip -t /tmp/v66.zip
