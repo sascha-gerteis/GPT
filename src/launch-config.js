@@ -1,6 +1,6 @@
 window.SKILL_ARCADE_LAUNCH_CONFIG = Object.freeze({
-  build: 'V6.5-mobile-arcade-beta',
-  mode: 'online-beta',
+  build: 'V6.6-real-infra-ready',
+  mode: 'live-infrastructure-setup',
   realMoneyEnabled: false,
   practiceEnabled: true,
   approvedJurisdictions: [],
@@ -9,5 +9,5 @@ window.SKILL_ARCADE_LAUNCH_CONFIG = Object.freeze({
   requireIdentityVerification: true,
   requireLocationVerification: true,
   requireFairPlayCheck: true,
-  note: 'Cash mode remains disabled. V6.5 focuses on mobile playability, game QA and arcade presentation.'
+  note: 'Real account, wallet, escrow and matchmaking infrastructure is scaffolded. Mainnet cash mode remains disabled until providers, security, jurisdiction and compliance controls are explicitly connected and approved.'
 });
