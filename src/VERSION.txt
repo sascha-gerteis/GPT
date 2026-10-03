@@ -1,1 +1,1 @@
-6.6-real-infra-ready
+6.7-competitive-shell-reboot
